@@ -14,4 +14,4 @@ Below you can find the design documents for our system and the progress reports.
 
 ## Reports
 [Proposal](proposal.pdf)  
-[Design Report](designReport.pdf)  
+[Design Report](DesignReport.pdf)  
