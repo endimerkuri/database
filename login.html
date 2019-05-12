@@ -1,87 +1,59 @@
 <?php
-	session_start();
+    session_start();
 ?>
-
 <html>
-<head>
-</head>
-<body>
-
-<?php
-$serverName = "dijkstra.ug.bcc.bilkent.edu.tr";
-$myUsername = "krisela.sknderi";
-$myPassword = "meTFcbF4";
-$dbName = "krisela_sknderi";
-
-// Create connection
-$conn = new mysqli($serverName, $myUsername, $myPassword, $dbName);
-
-// Check connection
-if( $conn->connect_error) {
-    die( "Connection failed: " . $conn->connect_error);
-} 
-
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-
-	$username = $_POST["username"];
-	$password = $_POST["password"];
-	
-	// check if any of the fields is blank and alert user
-    if( $username == "" && $password == "" )
-		echo "<script type='text/jscript'> alert('Username and password cannot be blank.') </script>";
-	
-	else if( $username == "")
-		echo "<script type='text/jscript'> alert('Username cannot be blank.') </script>";
-	
-	else if( $password == "" )
-		echo "<script type='text/jscript'> alert('Password cannot be blank.') </script>";
-	
-	else {
-	    // get username and password from database
-		$query = "SELECT cid FROM customer WHERE LOWER(name) = LOWER('$username') and cid = '$password'";
-        
-		if( $result = $conn->query( $query)){
-			if( $result-> num_rows == 1){
-				$_SESSION["username"] = $username;
-				$_SESSION["password"] = $password;
-				
-				header( "location: welcome.php");		// redirect to welcome page
-			}
-			else if( $result-> num_rows == 0)
-				echo "<script type='text/jscript'> alert('Password and username do not match.') </script>";
-	
-		}
-
-    }
-}
-?>
-
-	<div>
-
-	<center> 
-	<br><br>
-		<h2>KRISELA'S BANKING SYSTEM</h2> <br> <br>
-		
-		<form action="index.php" method="post">
-
-		<table>
-			<tr> <td>Username: </td><td> <input type="text" id="username" name="username">	</td></tr>
-			
-			<tr> <td> Password: </td><td>  <input type="password" id="password" name="password"> </td></tr>
-
-			</table>
-
-			<br> <br>
-
-			<input type = "submit" id="login" value="Log In" name = "login"> 
-
-		</form>
-
-	</center>
-
-	</div>
-
-</body>
-
+    <head>
+        <title>
+            Login
+        </title>
+    </head>
+    <body>
+        <center>
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post">
+            <table>
+            <tr> <td>Username:</td><td> <input id="user" name="username" type="text" required/> </td></tr>
+            <tr> <td>Password:</td><td> <input id="pass" name="pass" type="password" required/> </td></tr>
+            <tr> <td></td><td><input type="submit" value="Log in" /></td>
+            </table>
+        </form>
+        <?php
+            $username = $pass = "";
+            function test_input($data) {
+                $data = trim($data);
+                $data = stripslashes($data);
+                $data = htmlspecialchars($data);
+                return $data;
+            }
+            if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                $user = test_input($_POST["username"]);
+                $pass = test_input($_POST["pass"]);
+                $servername = "dijkstra.cs.bilkent.edu.tr";
+                $username = "endi.merkuri";
+                $password = "qKy7pwmv";
+                $dbname = "endi_merkuri";
+                // Create connection
+                $con = new mysqli($servername, $username, $password, $dbname);
+                
+                // Check connection
+                if ($con->connect_error) {
+                    die("Connection failed: " . $con->connect_error);
+                }     
+                $stmt = $con->prepare("SELECT cid FROM customer WHERE name = ?");
+                $stmt->bind_param("s", $user);
+                $stmt->execute();
+                $stmt->bind_result($result);
+                $stmt->fetch();
+                if ( $result == $pass ) {
+                    $_SESSION['username'] = $user;
+                    $_SESSION['cid'] = $pass;
+                    header('Location: welcome.php');
+                } else {
+                    echo "Wrong username or password";
+                }
+                $stmt->close();
+                $con->close();
+            }
+        ?>
+        </center>
+    </body>
 </html>
-
