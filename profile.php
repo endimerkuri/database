@@ -13,9 +13,9 @@
 </head>
 
 	<body>
-		<nav class="navbar navbar-expand-sm bg-dark navbar-light" style="border-bottom: 2px solid red">
+		<nav class="navbar navbar-expand-sm bg-white navbar-light" style="border-bottom: 2px solid red">
 		  <a class="navbar-brand mr-auto" href="#">
-			<img src="icon.jpeg" alt="Logo" style="height:50px">
+			<img src="icon.jpeg" alt="Logo" style="height:50px;position:absolute;top:50%;transform:translate(0%,-50%)">
 		  </a>
 
 		  <ul class="navbar-nav">
