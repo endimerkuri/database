@@ -15,20 +15,26 @@
         die( "Connection failed: " . $conn->connect_error);
     } 
 
-    // $getName = " SELECT name FROM event WHERE id = '". $_GET['eventID']."';";
-    $getEventName = " SELECT name FROM event WHERE id = 4;";
+    // $getName = " SELECT * FROM event WHERE id = '". $_GET['eventID']."';";
+    $getEventName = " SELECT * FROM event WHERE id = 4;";
     $eventName = $conn->query( $getEventName);
     if( $eventName->num_rows <= 0){
         echo "<script type='text/jscript'> alert('Event not found') </script>";
         $eventName = "Error";
     }
-    else
-        $eventName = $eventName-> fetch_assoc()['name'];
+    else{
+        $event = $eventName-> fetch_assoc();
+        $eventName = $event['name'];
+        $address = $event['city_name']."+".$event['country'];
+    }
 
 
     // $getName = " SELECT * FROM comment WHERE event_id = '". $_GET['eventID']."';";
-    $getComments = " SELECT * FROM comment WHERE event_id = 4;";
+    $getComments = " SELECT * FROM comment WHERE event_id = 4 AND status = 0;";
     $comments = $conn->query( $getComments);
+    if( $comments->num_rows <= 0){
+        echo "<script type='text/jscript'> alert('Event not found') </script>";
+    }
 
 ?>
 
@@ -71,6 +77,7 @@
                 <div class="tab-pane active" id="comments-logout">  
 				
 				<ul class="media-list">
+                <!-- Comment TextArea -->
 				<li class="media">
 					<form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
                         <div class="form-group">
@@ -101,11 +108,11 @@
 							<div class="col-sm-offset-2 col-sm-10">
 
                                 <div class="col-sm-7">
-                                    <label for="input-1" class="control-label">Rate This</label>
-                                    <input id="input-1" name="input-1" value="4.3" class="rating-loading">
+                                    <label for="rating" class="control-label">Rate This</label>
+                                    <input id="rating" name="input-1" value="4.3" class="rating-loading">
                                     <script>
                                     $(document).on('ready', function(){
-                                        $('#input-1').rating({min: 0, max: 5, step: 0.1, stars: 5});
+                                        $('#rating').rating({min: 0, max: 5, step: 0.1, stars: 5});
                                     });
                                     </script>
                                 </div>
@@ -118,169 +125,124 @@
                         </div>
            
 					</form>
-					</li>
+				</li> <!-- end Comment TextArea -->
 
-            <li class="media">
-                        
-			<a class="pull-left" href="#">
 
-			<!-- Add picture of user -->
-                <img class="media-object img-circle" src="https://s3.amazonaws.com/uifaces/faces/twitter/dancounsell/128.jpg" alt="profile">
-            </a>
+            <?php 
+                while($row = $comments->fetch_assoc()){ 
+                $getUserInfo = "SELECT * FROM user WHERE username = '".$row['username']."';";
+                $result = $conn->query( $getUserInfo);
+                $result = $result->fetch_assoc();
 
-            <div class="media-body">
-                <div class="well well-lg">
-					<!-- Add name of user -->
-                    <h4 class="media-heading text-uppercase reviews">Marco </h4>
-                              
-					<ul class="media-date text-uppercase reviews list-inline">
+                $profile_pic = $result['profile_pic'];
+                $name = $result['name'];
+                $time = $row['time'];
+                $text_content = $row['text_content'];
+                $rate = $row['rate'];
+                $replyID = $row['id'];
+                $commentID = $row['id']."a";
 
-					<!-- Add date of comment -->
-                    <li class="dd">22</li>
-                    <li class="mm">09</li>
-                    <li class="aaaa">2014</li>
-                    </ul>
+                $text= <<<EOT
+                <li class="media"> <!-- Comments-->
+                            
+                    <a class="pull-left" href="#">
 
-					<!-- Add comment -->
-                    <p class="media-comment">
-                    Great snippet! Thanks for sharing.
-                    </p>
+                    <!-- Add picture of user -->
+                        <img class="media-object img-circle" src="$profile_pic" alt="profile">
+                    </a>
 
-                    <a class="btn btn-info btn-circle text-uppercase" data-toggle="collapse" href="#writeReply" id="reply"><span class="glyphicon glyphicon-share-alt"></span> Reply</a>
-                    <a class="btn btn-warning btn-circle text-uppercase" data-toggle="collapse" href="#replyOne"><span class="glyphicon glyphicon-comment"></span> 2 comments</a>
-                          
-					<div id = "writeReply" class= "collapse" name = "writeReply" style = "margin-top:20px">
-						<form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
-							<div class="form-group">
-								<div class="col-sm-12">
-									<textarea class="form-control" name="addComment" id="addComment" rows="5" placeholder="Type reply ..."></textarea>
-								</div>
-							</div>
-							
-							<div class="form-group">
-								<div class="col-sm-12">                    
-									<button class="btn btn-success btn-circle text-uppercase" style="float:right" type="submit" id="submitComment"><span class="glyphicon glyphicon-send"></span> Submit reply</button>
-								</div>
-							</div>            
-						</form>
-					</div>
-				</div> 
-            </div>
+                    <div class="media-body">
+                        <div class="well well-lg">
+                            <!-- Add name of user -->
+                            <h4 class="media-heading text-uppercase reviews"> $name </h4>
+                                    
+                            <p class="media-date text-uppercase reviews list-inline">
+                            $time
+                            </p>
 
-            <div id = "replyOne" class= "collapse" name ="replyOne">
-                <ul class="media-list">
-                    <li class="media media-replied">
-                        <a class="pull-left" href="#">
-                            <img class="media-object img-circle" src="https://s3.amazonaws.com/uifaces/faces/twitter/ManikRathee/128.jpg" alt="profile">
-                        </a>
-                        <div class="media-body">
-                            <div class="well well-lg">
-                                <h4 class="media-heading text-uppercase reviews"><span class="glyphicon glyphicon-share-alt"></span> The Hipster</h4>
-                                <ul class="media-date text-uppercase reviews list-inline">
-                                <li class="dd">22</li>
-                                <li class="mm">09</li>
-                                <li class="aaaa">2014</li>
-                                </ul>
-                                <p class="media-comment">
-                                Nice job Maria.
-                                </p>
-                            </div>              
-                        </div>
-                    </li>
+                            <!-- Add comment -->
+                            <p class="media-comment">
+                            $text_content
+                            </p> 
 
-                    <li class="media media-replied" id="replied">
-                        <a class="pull-left" href="#">
-                            <img class="media-object img-circle" src="https://pbs.twimg.com/profile_images/442656111636668417/Q_9oP8iZ.jpeg" alt="profile">
-                        </a>
-                        <div class="media-body">
-                            <div class="well well-lg">
-                                <h4 class="media-heading text-uppercase reviews"><span class="glyphicon glyphicon-share-alt"></span> Mary</h4></h4>
-                                <ul class="media-date text-uppercase reviews list-inline">
-                                <li class="dd">22</li>
-                                <li class="mm">09</li>
-                                <li class="aaaa">2014</li>
-                                </ul>
-                                <p class="media-comment">
-                                Thank you Guys!
-                                </p>
-                            </div>              
-                        </div>
-                    </li>
-                </ul>  
-            </div>
+                            <a class="btn btn-info btn-circle text-uppercase" data-toggle="collapse" href="#$replyID"> <span class="glyphicon glyphicon-share-alt"></span> Reply</a>
+                            <a class="btn btn-warning btn-circle text-uppercase" data-toggle="collapse" href="#$commentID"> <span class="glyphicon glyphicon-comment"></span> Comments</a>
 
-            </li>          
-            <li class="media">
-            <a class="pull-left" href="#">
-                <img class="media-object img-circle" src="https://s3.amazonaws.com/uifaces/faces/twitter/kurafire/128.jpg" alt="profile">
-            </a>
-            <div class="media-body">
-                <div class="well well-lg">
-                    <h4 class="media-heading text-uppercase reviews">Nico</h4>
-                    <ul class="media-date text-uppercase reviews list-inline">
-                    <li class="dd">22</li>
-                    <li class="mm">09</li>
-                    <li class="aaaa">2014</li>
-                    </ul>
-                    <p class="media-comment">
-                    I'm looking for that. Thanks!
-                    </p>
-                    <div class="embed-responsive embed-responsive-16by9">
-                        <iframe class="embed-responsive-item" src="//www.youtube.com/embed/80lNjkcp6gI" allowfullscreen></iframe>
+                            <div style="float:right;">
+                                    <input id="input-$replyID" name="input-$replyID" value="$rate" class="rating-loading">
+                            </div>
+                            <script>
+                                $(document).on('ready', function(){
+                                    $('#input-$replyID').rating({displayOnly: true, step: 0.5});
+                                });
+                            </script>
+                                
+
+                            <div id = "$replyID" class= "collapse" name = "$replyID" style = "margin-top:20px">
+                                <form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
+                                    <div class="form-group">
+                                        <div class="col-sm-12">
+                                            <textarea class="form-control" name="addComment" id="addComment" rows="5" placeholder="Type reply ..."></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="col-sm-12">                    
+                                            <button class="btn btn-success btn-circle text-uppercase" style="float:right" type="submit" id="submitComment"><span class="glyphicon glyphicon-send"></span> Submit reply</button>
+                                        </div>
+                                    </div>            
+                                </form>
+                            </div>
+                        </div> 
                     </div>
-                    <a class="btn btn-info btn-circle text-uppercase" href="#" id="reply"><span class="glyphicon glyphicon-share-alt"></span> Reply</a>
-                </div>              
-            </div>
-            </li>
-            <li class="media">
-            <a class="pull-left" href="#">
-                <img class="media-object img-circle" src="https://s3.amazonaws.com/uifaces/faces/twitter/lady_katherine/128.jpg" alt="profile">
-            </a>
-            <div class="media-body">
-                <div class="well well-lg">
-                    <h4 class="media-heading text-uppercase reviews">Kriztine</h4>
-                    <ul class="media-date text-uppercase reviews list-inline">
-                    <li class="dd">22</li>
-                    <li class="mm">09</li>
-                    <li class="aaaa">2014</li>
-                    </ul>
-                    <p class="media-comment">
-                    Yehhhh... Thanks for sharing.
-                    </p>
-                    <a class="btn btn-info btn-circle text-uppercase" href="#writeReply" id="reply"><span class="glyphicon glyphicon-share-alt"></span> Reply</a>
-                    <a class="btn btn-warning btn-circle text-uppercase" data-toggle="collapse" href="#replyTwo"><span class="glyphicon glyphicon-comment"></span> 1 comment</a>
-                </div>              
-            </div>
 
+                    <div id = "$commentID" class= "collapse" name ="$commentID">
+                       <ul class="media-list">
+EOT;
+                echo $text;
+                $replies = "SELECT * FROM comment NATURAL JOIN (SELECT child AS id FROM reply WHERE parent = '".$row['id']."') AS temp; ";
+                $repliesResult = $conn->query($replies);
+                while( $replyRow = $repliesResult->fetch_assoc()){
 
-            <div class="collapse" id="replyTwo">
-                <ul class="media-list">
-                    <li class="media media-replied">
-                        <a class="pull-left" href="#">
-                            <img class="media-object img-circle" src="https://s3.amazonaws.com/uifaces/faces/twitter/jackiesaik/128.jpg" alt="profile">
-                        </a>
-                        <div class="media-body">
-                            <div class="well well-lg">
-                                <h4 class="media-heading text-uppercase reviews"><span class="glyphicon glyphicon-share-alt"></span> Lizz</h4>
-                                <ul class="media-date text-uppercase reviews list-inline">
-                                <li class="dd">22</li>
-                                <li class="mm">09</li>
-                                <li class="aaaa">2014</li>
-                                </ul>
-                                <p class="media-comment">
-                                Classy!
-                                </p>
-                                <a class="btn btn-info btn-circle text-uppercase" href="#" id="reply"><span class="glyphicon glyphicon-share-alt"></span> Reply</a>
-                            </div>              
-                        </div>
-                    </li>
+                    $replyUser = " SELECT * FROM user WHERE username = '".$replyRow['username']."';";
+                    $replyUser = $conn->query($replyUser);
+                    $replyUser = $replyUser->fetch_assoc();
 
-                </ul>  
-            </div>
-            </li>
+                    $profile_pic = $replyUser['profile_pic'];
+                    $name = $replyUser['name'];
+                    $time = $replyRow['time'];
+                    $text_content = $replyRow['text_content'];
+                
+                    $replyText= <<<EOT
+                            <li class="media media-replied">
+                                <a class="pull-left" href="#">
+                                    <img class="media-object img-circle" src="$profile_pic" alt="profile">
+                                </a>
+                                <div class="media-body">
+                                    <div class="well well-lg">
+                                        <h4 class="media-heading text-uppercase reviews"><span class="glyphicon glyphicon-share-alt"></span> $name</h4>
+                                        
+                                        <p class="media-date text-uppercase reviews list-inline">
+                                        $time
+                                        </p>
+                
+                                        <!-- Add comment -->
+                                        <p class="media-comment">
+                                        $text_content
+                                        </p>
+                                        
+                                    </div>              
+                                </div>
+                            </li>
+EOT;
+                    echo $replyText;
+                }
+                echo "</ul></div></li>";
+            }   
+         ?>
+
         </ul> 
     </div>
-
 
 
     <div class="tab-pane" id="add-comment">
@@ -309,51 +271,48 @@
     </div>
 
 
-    <!--EVENT TAB-->
-    <div class="tab-pane" id="address">
-        <form action="#" method="post" class="form-horizontal" id="accountSetForm" role="form">
-            <div class="form-group">
-                <div class="col-sm-8">                    
-                    <!--Google map-->
-                    <div class="container-fluid">
-                        <div class="map-responsive">
-                        <iframe src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=Eiffel+Tower+Paris+France" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>
-                        </div>
-                    </div>
-                </div> 
+            <!--EVENT TAB-->
+            <div class="tab-pane" id="address">
+                <form action="#" method="post" class="form-horizontal" id="accountSetForm" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-8">                    
+                            <!--Google map-->
+                            <div class="container-fluid">
+                                <div class="map-responsive">
+                                <?php 
+                                echo "<iframe src=\"https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=$address\" width=\"600\" height=\"450\" frameborder=\"0\" style=\"border:0\" allowfullscreen></iframe>";
+                                ?>
+                                </div>
+                            </div>
+                        </div> 
 
-                <div class="col-sm-2" style="text-align: center">                    
-                    <div class="row" style="display: inline-block">
-                        <h4 class="media-heading text-uppercase reviews">Time </h4>
-                        <p class="media-comment">
-                            Great snippet! Thanks for sharing.
-                        </p>
-                    </div>
+                        <div class="row" style="text-align: center">
+                        
+                            <div class="col-sm-4" style="display: inline-block">
+                                <h4 class="media-heading text-uppercase reviews">DATE </h4>
+                                <p class="media-comment">
+                                    <?php echo $event['date']; ?>
+                                </p>
+                            </div>
 
-                    <div class="row" style="display: inline-block"> 
-                        <h4 class="media-heading text-uppercase reviews">Host </h4>
-                        <p class="media-comment">
-                            Great snippet! Thanks for sharing.
-                        </p>
-                    </div>
-                    <div class="row" style="display: inline-block">
-                        <h4 class="media-heading text-uppercase reviews">Description</h4>
-                        <p class="media-comment">
-                            Great snippet! Thanks for sharing.
-                        </p>
-                    </div>
-                </div> 
-			</div>			
-			<div class="form-group">
+                            <div class=col-sm-4 style="display: inline-block"> 
+                                <h4 class="media-heading text-uppercase reviews">TIME </h4>
+                                <p class="media-comment">
+                                    <?php echo $event['start_time']; ?>
+                                </p>
+                            </div>
+                            <div class="col-sm-4" style="display: inline-block; word-wrap:break-word">
+                                <h4 class="media-heading text-uppercase reviews">DESCRIPTION</h4>
+                                <p class="media-comment">
+                                    <?php echo $event['description']; ?>
+                                </p>
+                            </div>
+                        </div> 
+                    </div>			    
 
-						
-            </div>     
-
-
-
-        </form>
-    </div>
+                </form>
             </div>
+        </div>
         </div>
 	</div>
   </div>
