@@ -45,6 +45,7 @@
 				</div>
 				<div class="carousel-item item" style ="background-image:url(img4.jpg)">
 				</div> 
+			</div>
 		</div>
 	</body>
 </html>
