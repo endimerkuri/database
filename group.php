@@ -14,7 +14,8 @@
         echo "<script type='text/jscript'> alert('Connection failed') </script>";
         die( "Connection failed: " . $conn->connect_error);
     } 
-
+    $_GET['groupID'] = 2;
+    $_SESSION['user'] = "kris";
     $getGroupName = " SELECT * FROM `group` WHERE id = '". $_GET['groupID']."';";
     // $getGroupName = " SELECT * FROM `group` WHERE id = 1;";
     $groupName = $conn->query( $getGroupName);
@@ -38,6 +39,44 @@
     $month['10'] = 'Oct';
     $month['11'] = 'Nov';
     $month['12'] = 'Dec';
+
+
+     if(isset($_POST['newEventSubmit'])) {
+        //echo "<script type='text/jscript'> alert('Button clicked') </script>"; }
+            
+            $newEventName = $conn->real_escape_string($_POST["newEventName"]);
+            $newEventCity = $conn->real_escape_string($_POST["newEventCity"]);
+            $newEventCountry = $conn->real_escape_string($_POST["newEventCountry"]);
+            $newEventDate = $conn->real_escape_string($_POST["newEventDate"]);
+            $newEventDescription= $conn->real_escape_string($_POST["newEventDescription"]);
+
+             //$newEventPrivacy = $conn->real_escape_string($_POST["newEventPrivacy"]);
+
+            $registerQuery = "INSERT INTO event(group_id, name, date, city_name, country, description) VALUES( 2,'$newEventName', '$newEventDate', '$newEventCity', '$newEventCountry', '$newEventDescription');";
+            // echo $registerQuery;
+            if($conn->query($registerQuery) === true) {
+
+                $getID = "SELECT LAST_INSERT_ID() AS newEventID;";
+                $getID = $conn->query($getID);
+                $getID = $getID->fetch_assoc()['newEventID'];
+
+                $tagList = explode(",", $_POST['newEventCat']);
+                foreach( $tagList as $tag){
+                    $addTag = "INSERT INTO category VALUES('$tag');";
+                    $addTag = $conn->query($addTag);
+
+                    $addTag2 = "INSERT INTO event_category VALUES( '$getID', '$tag');";
+                    $addTag2 = $conn->query($addTag2);
+                }
+
+                $addAdmin = "INSERT INTO participates VALUES('$getID', '".$_SESSION['user']."', 'going');";
+                $addAdmin = $conn->query( $addAdmin);
+
+                header("location: event.php?eventID=$getID");
+            } else {
+                echo "<script type='text/jscript'> alert('FAILED') </script>"; 
+            }  
+    }          
 ?>
 
 <html>
@@ -52,6 +91,12 @@
 
 <link rel="stylesheet" type="text/css" href="styleEvent.css">
 <script src="imageUpload.js"> </script>
+
+<!------ For categories ---------->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css"> -->
+<link rel="stylesheet" href="categoriesCSS.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="categoriesJS.js"></script>
 
 </head>
 
@@ -94,6 +139,7 @@
                 <li class="active"><a href="#comments-logout" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Events</h4></a></li>
                 <li><a href="#add-comment" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Members</h4></a></li>
                 <li><a href="#address" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">About</h4></a></li>
+                <li><a href="#createEvent" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Create Event</h4></a></li>
             </ul> 
 			
             <div class="tab-content">
@@ -120,13 +166,6 @@
                                         <div class="info">
                                             <a href="event.php?eventID='.$currEvent['id'].'"><h2 class="title">'.$currEvent['name'].'</h2></a>
                                             <p class="desc">'.$currEvent['description'].'</p>
-                                        </div>
-                                        <div class="social">
-                                            <ul>
-                                                <li class="facebook" style="width:33%;"><a href="#facebook"><span class="fa fa-facebook"></span></a></li>
-                                                <li class="twitter" style="width:34%;"><a href="#twitter"><span class="fa fa-twitter"></span></a></li>
-                                                <li class="google-plus" style="width:33%;"><a href="#google-plus"><span class="fa fa-google-plus"></span></a></li>
-                                            </ul>
                                         </div>
                                     </li>';
                                 }
@@ -218,6 +257,94 @@
 
                 </form>
             </div>
+
+            <?php 
+            $isAdmin = "SELECT status".
+                       " FROM is_part_of". 
+                       " WHERE username = '".$_SESSION['user']."' AND group_id = ". $_GET['groupID'].";";
+
+            $isAdmin = $conn->query( $isAdmin);
+            $isAdmin = $isAdmin->fetch_assoc()['status'];
+
+            if( $isAdmin == "admin"){
+
+            echo '                            
+            <div class="tab-pane" id="createEvent">
+
+                    <form action="group.php" method="post" class="form-horizontal" id="newEventSetForm" role="form">
+                        
+                        <div class="form-group">
+                            <label for="avatar" class="col-sm-2 control-label">Avatar</label>
+                            <div class="col-sm-10">                                
+                                <div class="custom-input-file">
+                                    <label class="uploadPhoto">
+                                        Edit
+                                        <input type="file" class="change-avatar" name="avatar" id="avatar">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newEventName" class="col-sm-2 control-label">Event Name</label>
+                            <div class="col-sm-10">
+                              <input type="text" class="form-control" name="newEventName" id="newEventName" placeholder="Enter event name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newEventCity" class="col-sm-2 control-label">City</label>
+                            <div class="col-sm-10">
+                              <input type="text" class="form-control" name="newEventCity" id="newEventCity" placeholder="City" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newEventCountry" class="col-sm-2 control-label">Country</label>
+                            <div class="col-sm-10">
+                              <input type="text" class="form-control" name="newEventCountry" id="newEventCountry" placeholder="Country" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newEventDate" class="col-sm-2 control-label">Date </label>
+                            <div class="col-sm-10">
+                              <input type="date" class="form-control" name="newEventDate" id="newEventDate" required>
+                            </div>
+                        </div> 
+
+                        <div class="form-group">
+                            <label for="newEventPrivacy" class="col-sm-2 control-label">Privacy</label>
+                            <div class="col-sm-10">
+                                <label class="radio-inline"><input type="radio" id="newEventPrivacy" name="newEventPrivacy" checked>Public</label>
+                                <label class="radio-inline"><input type="radio" id="newEventPrivacy" name="newEventPrivacy">Private</label>
+                            </div>
+                        </div> 
+
+                        <div class="form-group">
+                            <label for="newEventDescription" class="col-sm-2 control-label">Description</label>
+                            <div class="col-sm-10">
+                              <textarea class="form-control" name="newEventDescription" id="newEventDescription" placeholder="Description" rows="3"> </textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newEventCat" class="col-sm-2 control-label">Categories</label>
+                            <div class="col-sm-10">
+                                <input type="text" data-role="tagsinput" placeholder="Add tags" name="newEventCat" id ="newEventCat" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">                    
+                                <button class="btn btn-primary btn-circle text-uppercase" type="submit" name="newEventSubmit" id="newEventSubmit">Create Event</button>
+                            </div>
+                        </div>            
+                    </form>
+                </div>
+            ';}
+             ?>
+
         </div>
         </div>
 	</div>

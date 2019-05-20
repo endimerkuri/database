@@ -343,6 +343,24 @@ EOT;
                                             </p>
                                         </div>
                                     </li>
+
+                                    <li>
+                                        <div style="display: inline-block"> 
+                                            <h4 class="media-heading text-uppercase reviews">TAGS </h4>
+                                            <p class="media-comment">
+
+                                            <?php
+                                            $getTags = "SELECT tag FROM event_category WHERE event_id =".$_SESSION['eventID'].";";
+                                            $getTags = $conn->query($getTags);
+
+                                                    while( $tag = $getTags->fetch_assoc()){
+                                                        echo  "<span class=\"badge badge-info\">".$tag['tag']."</span>";
+                                                    ;} 
+                                            ?>
+                                            </p>
+                                        </div>
+                                    </li>
+
                                     <li>
                                         <div class="col-sm-12" style="display: inline-block; word-wrap:break-word; padding-left:0px">
                                             <h4 class="media-heading text-uppercase reviews">DESCRIPTION</h4>
