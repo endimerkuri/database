@@ -26,7 +26,18 @@
         $group = $groupName-> fetch_assoc();
         $groupName = $group['name'];
     }
-
+    $month['01'] = 'Jan';
+    $month['02'] = 'Feb';
+    $month['03'] = 'Mar';
+    $month['04'] = 'Apr';
+    $month['05'] = 'May';
+    $month['06'] = 'Jun';
+    $month['07'] = 'Jul';
+    $month['08'] = 'Aug';
+    $month['09'] = 'Sep';
+    $month['10'] = 'Oct';
+    $month['11'] = 'Nov';
+    $month['12'] = 'Dec';
 ?>
 
 <html>
@@ -40,8 +51,6 @@
 <!------ Include the above in your HEAD tag ---------->
 
 <link rel="stylesheet" type="text/css" href="styleEvent.css">
-<link rel="stylesheet" type="text/css" href="starRatingMin.css">
-<script src="starRating.js"> </script>
 <script src="imageUpload.js"> </script>
 
 </head>
@@ -53,21 +62,21 @@
             <img src="icon.jpeg" alt="Logo" style="height:50px;position:absolute;top:50%;transform:translate(0%,-50%)">
         </a>
 
-        <ul class="navbar-nav" style="list-style-type:none;float:right">
+        <ul class="navbar-nav" style="list-style-type:none;float:right;margin-top:15px">
             <li class="nav-item">
-                <a class="nav-link text-danger" href="#">Explore <span class= "glyphicon glyphicon-search"> </span></a>
+                <a class="nav-link" style="color:red" href="#">Explore <span class= "glyphicon glyphicon-search"> </span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-danger" href="#">Messages <span class= "glyphicon glyphicon-envelope"> </span></a>
+                <a class="nav-link" style="color:red" href="#">Messages <span class= "glyphicon glyphicon-envelope"> </span></a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link text-danger" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
+                <a class="nav-link" style="color:red" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-danger" href="#">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
+                <a class="nav-link" style="color:red" href="profile.php">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-danger" href="login.php">Log out <span class= "glyphicon glyphicon-lock"> </span> </a>
+                <a class="nav-link" style="color:red" href="login.php">Log out <span class= "glyphicon glyphicon-lock"> </span> </a>
             </li>
         </ul>
     </nav>
@@ -97,12 +106,14 @@
                                 $eventsQuery = "SELECT * FROM event WHERE group_id = ". $_GET['groupID'] . ";";
                                 $eventsList = $conn->query( $eventsQuery);
                                 while ( $currEvent = $eventsList->fetch_assoc() ) {
+                                    $timeDate = explode("-", $currEvent['date']);
+                                    echo $timeDate[0];
                                     echo 
                                     '<li>
-                                        <time datetime="2014-07-20">
-                                            <span class="day">4</span>
-                                            <span class="month">Jul</span>
-                                            <span class="year">2014</span>
+                                        <time datetime="'.$currEvent['date'].'">
+                                            <span class="day">'.$timeDate[2].'</span>
+                                            <span class="month">'.$month[$timeDate[1]].'</span>
+                                            <span class="year">'.$timeDate[0].'</span>
                                             <span class="time">ALL DAY</span>
                                         </time>
                                         <img alt="Independence Day" src="https://farm4.staticflickr.com/3100/2693171833_3545fb852c_q.jpg" />

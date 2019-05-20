@@ -17,7 +17,7 @@
 </head>
 
 	<body>
-    <nav class="navbar navbar-expand-sm bg-white navbar-light" style="border-bottom: 2px solid red">
+  <nav class="navbar navbar-expand-sm bg-white navbar-light" style="border-bottom: 2px solid red">
         <a class="navbar-brand mr-auto" href="#">
             <img src="icon.jpeg" alt="Logo" style="height:50px;position:absolute;top:50%;transform:translate(0%,-50%)">
         </a>
@@ -33,16 +33,15 @@
                 <a class="nav-link text-danger" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-danger" href="#">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
+                <a class="nav-link text-danger" href="profile.php">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-danger" href="login.php">Log out <span class= "glyphicon glyphicon-lock"> </span> </a>
+                <a class="nav-link" style="color:red" href="login.php">Log out <span class= "glyphicon glyphicon-lock"> </span> </a>
             </li>
         </ul>
     </nav>
         
         <?php
-        
         session_start();
         $dbServer = "localhost";
         $dbUsername = "talha.sen";

@@ -70,7 +70,29 @@
 </head>
 
 <body>
+<nav class="navbar navbar-expand-sm bg-white navbar-light" style="border-bottom: 2px solid red">
+        <a class="navbar-brand" href="#">
+            <img src="icon.jpeg" alt="Logo" style="height:50px;position:absolute;top:50%;transform:translate(0%,-50%)">
+        </a>
 
+        <ul class="navbar-nav" style="list-style-type:none;float:right;margin-top:15px">
+            <li class="nav-item">
+                <a class="nav-link" style="color:red" href="#">Explore <span class= "glyphicon glyphicon-search"> </span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="color:red" href="#">Messages <span class= "glyphicon glyphicon-envelope"> </span></a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" style="color:red" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="color:red" href="profile.php">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="color:red" href="login.php">Log out <span class= "glyphicon glyphicon-lock"> </span> </a>
+            </li>
+        </ul>
+    </nav>
 <div class="container">
   <div class="row">
     <div class="col-sm-10 col-sm-offset-1" id="logout" width = "90%">
