@@ -14,8 +14,6 @@
         echo "<script type='text/jscript'> alert('Connection failed') </script>";
         die( "Connection failed: " . $conn->connect_error);
     } 
-    $_GET['groupID'] = 2;
-    $_SESSION['user'] = "kris";
     $getGroupName = " SELECT * FROM `group` WHERE id = '". $_GET['groupID']."';";
     // $getGroupName = " SELECT * FROM `group` WHERE id = 1;";
     $groupName = $conn->query( $getGroupName);
@@ -39,8 +37,6 @@
     $month['10'] = 'Oct';
     $month['11'] = 'Nov';
     $month['12'] = 'Dec';
-
-
      if(isset($_POST['newEventSubmit'])) {
         //echo "<script type='text/jscript'> alert('Button clicked') </script>"; }
             
@@ -52,7 +48,7 @@
 
              //$newEventPrivacy = $conn->real_escape_string($_POST["newEventPrivacy"]);
 
-            $registerQuery = "INSERT INTO event(group_id, name, date, city_name, country, description) VALUES( 2,'$newEventName', '$newEventDate', '$newEventCity', '$newEventCountry', '$newEventDescription');";
+            $registerQuery = "INSERT INTO event(group_id, name, date, city_name, country, description) VALUES( ".$_GET['groupID'].",'$newEventName', '$newEventDate', '$newEventCity', '$newEventCountry', '$newEventDescription');";
             // echo $registerQuery;
             if($conn->query($registerQuery) === true) {
 
@@ -271,7 +267,7 @@
             echo '                            
             <div class="tab-pane" id="createEvent">
 
-                    <form action="group.php" method="post" class="form-horizontal" id="newEventSetForm" role="form">
+                    <form action="group.php?groupID='.$_GET['groupID'].'" method="post" class="form-horizontal" id="newEventSetForm" role="form">
                         
                         <div class="form-group">
                             <label for="avatar" class="col-sm-2 control-label">Avatar</label>
