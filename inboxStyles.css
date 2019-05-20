@@ -1,0 +1,143 @@
+#inbox .mailbox {
+  margin: 0px auto ;
+    /*padding: 0, 0, 30%, 0;*/
+  position: relative;
+  background: #CCDDED;
+  border-radius: 0px 5px 0px 0px;
+  width: 100%; max-width: 960px;
+}
+
+#inbox .nav {
+  position: absolute;
+  top: 0px; 
+    bottom: 0px;
+  background: #EEE;
+  width: 150px;
+    display: block;
+    /*display: -webkit-flexbox;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+    */
+
+}
+
+#inbox .nav a {
+  display: block;
+  padding: 5px 10px;
+  color: #3D9FC4;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+#inbox .nav a.active {
+  background: #CCDDED;
+}
+
+#inbox .nav a:first-child {
+  margin: 10px 0px 10px;
+}
+
+#inbox .messages {
+  padding: 10px 10px 10% 160px;
+  width: 100%;
+}
+
+#inbox .actions-dropdown {
+  display: block;
+  float: right;
+  position: relative;
+  margin: 5px 10px 10px 0px;
+}
+
+#inbox .actions-dropdown label {
+  padding: 5px 10px;
+  background: #EEE;
+  color: #666;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#inbox .actions-dropdown label span {
+  color: #999;
+  font-size: 10px;
+}
+
+.#inbox .mailbox .actions-dropdown:hover ul {
+  display: block;
+}
+
+#inbox .actions-dropdown ul {
+  display: none;
+  position: absolute;
+  list-style: none;
+  background: #EEE;
+  border-radius: 5px;
+  width: 100%;
+}
+#inbox .actions-dropdown li {
+  padding: 5px 10px;
+  color: #666;
+  cursor: pointer;
+}
+
+#inbox .actions-dropdown li:hover {
+  color: #000;
+}
+
+#inbox .actions-dropdown li:first-child {
+  margin-top: 5px;
+}
+
+#inbox input[name=search] {
+  display: block;
+  float: right;
+  margin-bottom: 10px;
+  padding: 5px 10px;
+  background: #EEE;
+  font: 14px Tahoma, Geneva, sans-serif;
+  border-radius: 5px;
+}
+
+#inbox input[name=search]:focus {
+  outline: none;
+}
+
+#inbox .message {
+  clear: both;
+  margin-bottom: 5px;
+  position: relative;
+  padding: 5px;
+  background: #bbd0e4;
+  border-radius: 5px;
+}
+
+#inbox .message input {
+  position: absolute;
+  top: 8px; left: 10px;
+  width: 30px;
+}
+
+#inbox .message .sender {
+  display: block;
+  position: absolute;
+  left: 40px;
+  color: #000;
+  font-weight: bold;
+  width: 90px;
+}
+
+#inbox .message .title {
+  display: inline-block;
+  padding-left: 150px;
+  width: 100%;
+}
+
+#inbox .message .date {
+  position: absolute;
+  right: 10px;
+}

@@ -5,7 +5,7 @@
     $myUsername = "talha.sen";
     $myPassword = "p2yjILda";
     $dbName = "talha_sen";
-
+    
     // Create connection
     $conn = new mysqli($serverName, $myUsername, $myPassword, $dbName);
 
@@ -14,9 +14,11 @@
         echo "<script type='text/jscript'> alert('Connection failed') </script>";
         die( "Connection failed: " . $conn->connect_error);
     } 
-
-    // $getName = " SELECT * FROM event WHERE id = '". $_GET['eventID']."';";
-    $getEventName = " SELECT * FROM event WHERE id = 4;";
+    if (isset($_GET['eventID'])) {
+        $_SESSION['eventID'] = $_GET['eventID'];
+    }
+    $getEventName = " SELECT * FROM event WHERE id = ". $_SESSION['eventID'].";";
+    // $getEventName = " SELECT * FROM event WHERE id = 4;";
     $eventName = $conn->query( $getEventName);
     if( $eventName->num_rows <= 0){
         echo "<script type='text/jscript'> alert('Event not found') </script>";
@@ -28,13 +30,25 @@
         $address = $event['city_name']."+".$event['country'];
     }
 
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if ( isset($_GET['reply'])  ) {
+            $submitReply1 = 
+                "INSERT INTO comment (rate, text_content, event_id, username, status) VALUES (0, '".$_POST['addComment']."',".$_SESSION['eventID'].", '".$_SESSION['user']."', 1);";
+            $submitReply2 =
+                "INSERT INTO reply(child, parent) VALUES(LAST_INSERT_ID(), ".$_GET['reply'].");";
+            $conn->query( $submitReply1);
+            $conn->query( $submitReply2);
 
-    // $getName = " SELECT * FROM comment WHERE event_id = '". $_GET['eventID']."';";
-    $getComments = " SELECT * FROM comment WHERE event_id = 4 AND status = 0;";
-    $comments = $conn->query( $getComments);
-    if( $comments->num_rows <= 0){
-        echo "<script type='text/jscript'> alert('Event not found') </script>";
+        } else {
+            $submitComment = "INSERT INTO comment (rate, text_content, event_id, username, status) ".
+                            "VALUES (".$_POST['input-1'].", '".$_POST['addComment']."', ".$_SESSION['eventID'].", '".$_SESSION['user']."', 0);";
+            $tttt = $conn->query( $submitComment);
+        }
     }
+
+    // $getName = " SELECT * FROM comment WHERE event_id = '". $_SESSION['eventID']."';";
+    $getComments = " SELECT * FROM comment WHERE event_id = ".$_SESSION['eventID']." AND status = 0 ORDER BY time DESC;";
+    $comments = $conn->query( $getComments);
 
 ?>
 
@@ -79,7 +93,7 @@
 				<ul class="media-list">
                 <!-- Comment TextArea -->
 				<li class="media">
-					<form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
+					<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" class="form-horizontal" id="commentForm" role="form"> 
                         <div class="form-group">
                             <label for="email" class="col-sm-2 control-label">Comment</label>
                             <div class="col-sm-10">
@@ -142,6 +156,10 @@
                 $replyID = $row['id'];
                 $commentID = $row['id']."a";
 
+
+                $replyNumQ = "SELECT count(*) AS count FROM reply WHERE parent = $replyID;";
+                $replyNum = $conn->query( $replyNumQ);
+                $replyNum = $replyNum->fetch_assoc()['count'];
                 $text= <<<EOT
                 <li class="media"> <!-- Comments-->
                             
@@ -166,23 +184,23 @@
                             </p> 
 
                             <a class="btn btn-info btn-circle text-uppercase" data-toggle="collapse" href="#$replyID"> <span class="glyphicon glyphicon-share-alt"></span> Reply</a>
-                            <a class="btn btn-warning btn-circle text-uppercase" data-toggle="collapse" href="#$commentID"> <span class="glyphicon glyphicon-comment"></span> Comments</a>
+                            <a class="btn btn-warning btn-circle text-uppercase" data-toggle="collapse" href="#$commentID"> <span class="glyphicon glyphicon-comment"></span> $replyNum Comments</a>
 
                             <div style="float:right;">
                                     <input id="input-$replyID" name="input-$replyID" value="$rate" class="rating-loading">
                             </div>
                             <script>
                                 $(document).on('ready', function(){
-                                    $('#input-$replyID').rating({displayOnly: true, step: 0.5});
+                                    $('#input-$replyID').rating({displayOnly: true, step: 0.1});
                                 });
                             </script>
                                 
 
                             <div id = "$replyID" class= "collapse" name = "$replyID" style = "margin-top:20px">
-                                <form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
+                                <form action="?reply=$replyID" method="post" class="form-horizontal" id="commentForm" role="form"> 
                                     <div class="form-group">
                                         <div class="col-sm-12">
-                                            <textarea class="form-control" name="addComment" id="addComment" rows="5" placeholder="Type reply ..."></textarea>
+                                            <textarea class="form-control" name="addComment" id="addComment" rows="5" placeholder="Type reply ..." required></textarea>
                                         </div>
                                     </div>
                                     
@@ -200,7 +218,7 @@
                        <ul class="media-list">
 EOT;
                 echo $text;
-                $replies = "SELECT * FROM comment NATURAL JOIN (SELECT child AS id FROM reply WHERE parent = '".$row['id']."') AS temp; ";
+                $replies = "SELECT * FROM comment NATURAL JOIN (SELECT child AS id FROM reply WHERE parent = '".$row['id']."') AS temp ORDER BY time DESC; ";
                 $repliesResult = $conn->query($replies);
                 while( $replyRow = $repliesResult->fetch_assoc()){
 
@@ -246,28 +264,24 @@ EOT;
 
 
     <div class="tab-pane" id="add-comment">
-        <form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
-            <div class="form-group">
-                <label for="email" class="col-sm-2 control-label">Comment</label>
-                <div class="col-sm-10">
-                    <textarea class="form-control" name="addComment" id="addComment" rows="5"></textarea>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="uploadMedia" class="col-sm-2 control-label">Upload media</label>
-                <div class="col-sm-10">                    
-                    <div class="input-group">
-                        <div class="input-group-addon">http://</div>
-                        <input type="text" class="form-control" name="uploadMedia" id="uploadMedia">
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="col-sm-offset-2 col-sm-10">                    
-                    <button class="btn btn-success btn-circle text-uppercase" type="submit" id="submitComment"><span class="glyphicon glyphicon-send"></span> Summit comment</button>
-                </div>
-            </div>            
-        </form>
+        <?php
+            $partQuery = "SELECT * FROM participates WHERE event_id = ".$_SESSION['eventID'].";";
+            // $partQuery = "SELECT * FROM participates WHERE event_id = 4;";
+            $part = $conn->query( $partQuery);
+            echo "<div class=\"row\" style=\"margin-right:0px;margin-left:0px\"><center>";
+            while ( $participant = $part->fetch_assoc() ) {
+                $partInfoQuery = "SELECT * FROM user NATURAL JOIN participates WHERE event_id = ". $_SESSION['eventID']. " AND username = '".$participant['username']."';";
+                $partInfo = $conn->query( $partInfoQuery);
+                $partInfo = $partInfo->fetch_assoc();
+                $pic = $partInfo['profile_pic'];
+
+                echo  "<div class=\"col-sm-3 well\">". 
+                    "<a href=\"#\"><img style=\"max-width:120px;margin-bottom:10px\" class=\"img-circle\" src=\"$pic\" alt=\"profile\">". 
+                    "</a><h5>".$partInfo['name']."</h5><p>".ucwords($partInfo['status'])."</p>".
+                    "</div>";
+            }
+            echo "</center></div>";
+        ?>
     </div>
 
 
@@ -275,39 +289,50 @@ EOT;
             <div class="tab-pane" id="address">
                 <form action="#" method="post" class="form-horizontal" id="accountSetForm" role="form">
                     <div class="form-group">
-                        <div class="col-sm-8">                    
-                            <!--Google map-->
-                            <div class="container-fluid">
-                                <div class="map-responsive">
-                                <?php 
-                                echo "<iframe style=\"width:100%\" src=\"https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=$address\" width=\"600\" height=\"450\" frameborder=\"0\" style=\"border:0\" allowfullscreen></iframe>";
-                                ?>
+                        <div class="row">
+                            <div class="col-sm-8">                    
+                                <!--Google map-->
+                                <div class="container-fluid">
+                                    <div class="map-responsive">
+                                    <?php 
+                                    echo "<iframe style=\"width:100%\" src=\"https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=$address\" width=\"600\" height=\"450\" frameborder=\"0\" style=\"border:0\" allowfullscreen></iframe>";
+                                    ?>
+                                    </div>
                                 </div>
-                            </div>
-                        </div> 
+                            </div> 
 
-                        <div class="row" style="text-align: center">
-                        
-                            <div class="col-sm-4" style="display: inline-block">
-                                <h4 class="media-heading text-uppercase reviews">DATE </h4>
-                                <p class="media-comment">
-                                    <?php echo $event['date']; ?>
-                                </p>
-                            </div>
+                            <!-- <div class="row" style="text-align: center"> -->
+                            <div class="col-sm-4" style="padding-left:0px">
+                                <ul style="list-style-type:none;padding-left:0px">
+                                    <li>
+                                        <div style="display: inline-block">
+                                            <h4 class="media-heading text-uppercase reviews">DATE </h4>
+                                            <p class="media-comment">
+                                                <?php echo $event['date']; ?>
+                                            </p>
+                                        </div>
+                                    </li>
 
-                            <div class=col-sm-4 style="display: inline-block"> 
-                                <h4 class="media-heading text-uppercase reviews">TIME </h4>
-                                <p class="media-comment">
-                                    <?php echo $event['start_time']; ?>
-                                </p>
+                                    <li>
+                                        <div style="display: inline-block"> 
+                                            <h4 class="media-heading text-uppercase reviews">TIME </h4>
+                                            <p class="media-comment">
+                                                <?php echo $event['start_time']; ?>
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="col-sm-12" style="display: inline-block; word-wrap:break-word; padding-left:0px">
+                                            <h4 class="media-heading text-uppercase reviews">DESCRIPTION</h4>
+                                            <p class="media-comment">
+                                                <?php echo $event['description']; ?>
+                                            </p>
+                                        </div
+                                    ></li>
+                                </ul>
                             </div>
-                            <div class="col-sm-4" style="display: inline-block; word-wrap:break-word">
-                                <h4 class="media-heading text-uppercase reviews">DESCRIPTION</h4>
-                                <p class="media-comment">
-                                    <?php echo $event['description']; ?>
-                                </p>
-                            </div>
-                        </div> 
+                        </div>
+                        <!-- </div>  -->
                     </div>			    
 
                 </form>

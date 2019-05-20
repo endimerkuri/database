@@ -59,7 +59,7 @@
                             <form action="login.php" method="post" >
                                 <div class="alert alert-error"><?= $_SESSION['message']?></div>
                                 <input type="text" class="fadeIn second" name="usernameLog" placeholder="Please enter username" required>
-                                <input type="text" class="fadeIn third" name="passwordLog" placeholder="Please enter password" required>
+                                <input type="password" class="fadeIn third" name="passwordLog" placeholder="Please enter password" required>
                                 <input type="submit" name ="loginButton" class="fadeIn fourth" value="Log In">
                             </form>
                             <div id="formFooter">

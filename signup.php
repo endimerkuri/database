@@ -56,27 +56,43 @@
 	</head>
 
 	<body>      
-		<div class = "wrapper">
-		  <div id="formContent">
-			<div>
-			  <img class="img-fluid" src="icon.jpeg" id="icon" alt="GatherTogether"/>
-			</div>
-			<form class="form" method="post" action="signup.php" >
-              <div class="alert alert-error"><?= $_SESSION['message']?></div>
-              <input type="text" class="fadeIn first" name="nameOfUser" placeholder="Enter your name" required>
-              <input type="text" class="fadeIn second" name="surnameOfUser" placeholder="Enter your surname" required>
-			  <input type="text" class="fadeIn third" name="usernameReg" placeholder="Enter a username" required>
-              <input type="text" class="fadeIn fourth" name="emailaddress" placeholder="Enter your e-mail" required>
-			  <input type="password" class="fadeIn fifth" name="passwordReg" placeholder="Enter a password" required>
-			  <input type="password" class="fadeIn sixth" name="passwordReg2" placeholder="Confirm the password" required>
-              
-                
-			  <input type="submit" name = "registerButton" class="fadeIn seventh" value="Sign Up">
-			 </form> 
-			<div id="formFooter">
-			  <p> Already have an account? <a class="underlineHover" href="login.php">Log In.</a> </p>
-			</div>
-		  </div>
-		</div>   
+  <div id="demo" class="carousel slide" data-ride="carousel" data-interval="1000">
+            <div class="carousel-inner">
+                <div id="content-wrapper" class="wrapper">
+                <div class = "wrapper">
+                  <div id="formContent">
+                  <div>
+                    <img class="img-fluid" src="icon.jpeg" id="icon" alt="GatherTogether"/>
+                  </div>
+                  <form class="form" method="post" action="signup.php" >
+                          <div class="alert alert-error"><?= $_SESSION['message']?></div>
+                          <input type="text" class="fadeIn first" name="nameOfUser" placeholder="Enter your name" required>
+                          <input type="text" class="fadeIn second" name="surnameOfUser" placeholder="Enter your surname" required>
+                    <input type="text" class="fadeIn third" name="usernameReg" placeholder="Enter a username" required>
+                          <input type="text" class="fadeIn fourth" name="emailaddress" placeholder="Enter your e-mail" required>
+                    <input type="password" class="fadeIn fifth" name="passwordReg" placeholder="Enter a password" required>
+                    <input type="password" class="fadeIn sixth" name="passwordReg2" placeholder="Confirm the password" required>
+                          
+                            
+                    <input type="submit" name = "registerButton" class="fadeIn seventh" value="Sign Up" style="margin-bottom:0px">
+                  </form> 
+                  <div id="formFooter">
+                    <p style="margin-bottom:0px"> Already have an account? <a class="underlineHover" href="login.php">Log In.</a> </p>
+                  </div>
+                  </div>
+                </div> 
+                </div>
+
+                <div class="carousel-item item active" style= "background-image:url(img1.jpg)">
+                </div>
+                <div class="carousel-item item" style ="background-image:url(img2.jpg)" >
+                </div>
+                <div class="carousel-item item" style ="background-image:url(img3.jpeg)">
+                </div>
+                <div class="carousel-item item" style ="background-image:url(img4.jpg)">
+                </div>
+            </div>
+        </div>
+		  
 	</body>
 </html>
