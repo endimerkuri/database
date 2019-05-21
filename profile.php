@@ -9,13 +9,13 @@ session_start();
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-
     
     <link rel="stylesheet" type ="text/css" href = "styles.css">
+    <link rel="stylesheet" type ="text/css" href = "styleEvent.css">
     <link rel="stylesheet" type ="text/css" href = "inboxStyles.css">
 </head>
 
@@ -55,6 +55,19 @@ session_start();
         if($con -> connect_error) {
             die("Connection Failed: " . $con -> connect_error) . "<br>";
         }
+
+        $month['01'] = 'Jan';
+    $month['02'] = 'Feb';
+    $month['03'] = 'Mar';
+    $month['04'] = 'Apr';
+    $month['05'] = 'May';
+    $month['06'] = 'Jun';
+    $month['07'] = 'Jul';
+    $month['08'] = 'Aug';
+    $month['09'] = 'Sep';
+    $month['10'] = 'Oct';
+    $month['11'] = 'Nov';
+    $month['12'] = 'Dec';
         
         
         
@@ -167,9 +180,7 @@ session_start();
               } else {
                   echo "<script type='text/jscript'> alert('FAILED') </script>"; 
               }  
-      } else {
-        echo "<script type='text/jscript'> alert('FAILED') </script>"; 
-      }// end of Create Group php         
+      } // end of Create Group php         
             
             ?>
             <div class="container">
@@ -181,7 +192,7 @@ session_start();
         <div class="comment-tabs">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="active"><a href="#comments-logout" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Groups</h4></a></li>
-                <li><a href="#add-comment" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Events</h4></a></li>
+                <li><a href="#events" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Events</h4></a></li>
                 <li><a href="#account-settings" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Account settings</h4></a></li>
                 <li><a href="#inbox" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Inbox</h4></a></li>
                 <li><a href="#createGroup" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Create Group</h4></a></li>
@@ -239,7 +250,34 @@ session_start();
                 
                 <!--Event-->
                 <div class="tab-pane" id="events">
-
+                        <ul class="event-list">
+                            <?php
+                                $userEventsQuery = "SELECT * FROM participates JOIN event ON event_id = id WHERE username = '". $_SESSION['user'] ."' AND status IN ('going','interested');";
+                                $eventsList = $con->query( $userEventsQuery);
+                                if( $eventsList->num_rows > 0){
+                                  while ( $currEvent = $eventsList->fetch_assoc() ) {
+                                      $timeDate = explode("-", $currEvent['date']);
+                                      echo $timeDate[0];
+                                      echo 
+                                      '<li>
+                                          <time datetime="'.$currEvent['date'].'">
+                                              <span class="day">'.$timeDate[2].'</span>
+                                              <span class="month">'.$month[$timeDate[1]].'</span>
+                                              <span class="year">'.$timeDate[0].'</span>
+                                              <span class="time">ALL DAY</span>
+                                          </time>
+                                          <img alt="Independence Day" src="https://farm4.staticflickr.com/3100/2693171833_3545fb852c_q.jpg" />
+                                          <div class="info">
+                                              <a href="event.php?eventID='.$currEvent['id'].'"><h2 class="title">'.$currEvent['name'].'</h2></a>
+                                              <p class="desc">'.$currEvent['description'].'</p>
+                                          </div>
+                                      </li>';
+                                  }
+                                }else{
+                                  echo "NO EVENTS TO DISPLAY";
+                                }
+                             ?>
+                        </ul>
                 </div>
                 
                                 
