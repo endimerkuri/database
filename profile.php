@@ -148,7 +148,6 @@ session_start();
         //$numOfGroups = $con->query($getNumOfGroups);
 
         // CREATE GROUP
-        echo "sdfsfsdfsdfsdfsfs";
         if(isset($_POST['newGroupSubmit'])) {
               $newGroupName = $con->real_escape_string($_POST["newGroupName"]);
               $newGroupDescription= $con->real_escape_string($_POST["newGroupDescription"]);
