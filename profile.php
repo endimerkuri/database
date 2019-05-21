@@ -1,3 +1,6 @@
+<?php
+session_start();
+?>
 <html>
 
 <head>
@@ -42,7 +45,6 @@
     </nav>
         
         <?php
-        session_start();
         $dbServer = "localhost";
         $dbUsername = "talha.sen";
         $dbPassword = "p2yjILda";
@@ -144,6 +146,31 @@
         
         //$getNumOfGroups = "SELECT COUNT(*) FROM is_part_of WHERE username = '$user';";
         //$numOfGroups = $con->query($getNumOfGroups);
+
+        // CREATE GROUP
+        echo "sdfsfsdfsdfsdfsfs";
+        if(isset($_POST['newGroupSubmit'])) {
+              $newGroupName = $con->real_escape_string($_POST["newGroupName"]);
+              $newGroupDescription= $con->real_escape_string($_POST["newGroupDescription"]);
+  
+              $registerGroupQuery = "INSERT INTO `group`(name, description) VALUES( '$newGroupName', '$newGroupDescription');";
+
+              if($con->query($registerGroupQuery) === true) {
+  
+                  $newGroupID = "SELECT LAST_INSERT_ID() AS newGroupID;";
+                  $newGroupID = $con->query($newGroupID);
+                  $newGroupID = $newGroupID->fetch_assoc()['newGroupID'];
+  
+                  $addGroupAdmin = "INSERT INTO is_part_of(username, group_id, status) VALUES('".$_SESSION['user']."', '$newGroupID', 'admin');";
+                  $addGroupAdmin = $con->query( $addGroupAdmin);
+  
+                  header("location: group.php?groupID=$newGroupID");
+              } else {
+                  echo "<script type='text/jscript'> alert('FAILED') </script>"; 
+              }  
+      } else {
+        echo "<script type='text/jscript'> alert('FAILED') </script>"; 
+      }// end of Create Group php         
             
             ?>
             <div class="container">
@@ -158,6 +185,7 @@
                 <li><a href="#add-comment" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Events</h4></a></li>
                 <li><a href="#account-settings" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Account settings</h4></a></li>
                 <li><a href="#inbox" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Inbox</h4></a></li>
+                <li><a href="#createGroup" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Create Group</h4></a></li>
             </ul>            
             <div class="tab-content">
                 <div class="tab-pane active" id="comments-logout">                
@@ -363,6 +391,46 @@
                     
                 </div>
                 <!--End of inbox-->
+                
+                <!--Create Group-->
+                <div class="tab-pane" id="createGroup">
+
+                    <form action="profile.php" method="post" class="form-horizontal" id="newGroupSetForm" role="form">
+                        
+                        <div class="form-group">
+                            <label for="avatar" class="col-sm-2 control-label">Avatar</label>
+                            <div class="col-sm-10">                                
+                                <div class="custom-input-file">
+                                    <label class="uploadPhoto">
+                                        Edit
+                                        <input type="file" class="change-avatar" name="avatar" id="avatar">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newGroupName" class="col-sm-2 control-label">Group Name</label>
+                            <div class="col-sm-10">
+                              <input type="text" class="form-control" name="newGroupName" id="newGroupName" placeholder="Enter event name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newGroupDescription" class="col-sm-2 control-label">Description</label>
+                            <div class="col-sm-10">
+                              <textarea class="form-control" name="newGroupDescription" id="newGroupDescription" placeholder="Description" rows="3"> </textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">                    
+                                <button class="btn btn-primary btn-circle text-uppercase" type="submit" name="newGroupSubmit" id="newGroupSubmit">Create Group</button>
+                            </div>
+                        </div>            
+                    </form>
+                </div>
+
                 
             </div>
         </div>
