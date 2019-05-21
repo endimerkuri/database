@@ -46,9 +46,9 @@
             $newEventDate = $conn->real_escape_string($_POST["newEventDate"]);
             $newEventDescription= $conn->real_escape_string($_POST["newEventDescription"]);
 
-             //$newEventPrivacy = $conn->real_escape_string($_POST["newEventPrivacy"]);
+            $newEventPrivacy = $_POST["newEventPrivacy"];
 
-            $registerQuery = "INSERT INTO event(group_id, name, date, city_name, country, description) VALUES( ".$_GET['groupID'].",'$newEventName', '$newEventDate', '$newEventCity', '$newEventCountry', '$newEventDescription');";
+            $registerQuery = "INSERT INTO event(group_id, name, date, city_name, country, description, privacy) VALUES( ".$_GET['groupID'].",'$newEventName', '$newEventDate', '$newEventCity', '$newEventCountry', '$newEventDescription', '$newEventPrivacy');";
             // echo $registerQuery;
             if($conn->query($registerQuery) === true) {
 
@@ -68,7 +68,7 @@
                 $addAdmin = "INSERT INTO participates VALUES('$getID', '".$_SESSION['user']."', 'going');";
                 $addAdmin = $conn->query( $addAdmin);
 
-                header("location: event.php?eventID=$getID");
+                //header("location: event.php?eventID=$getID");
             } else {
                 echo "<script type='text/jscript'> alert('FAILED') </script>"; 
             }  
@@ -312,8 +312,8 @@
                         <div class="form-group">
                             <label for="newEventPrivacy" class="col-sm-2 control-label">Privacy</label>
                             <div class="col-sm-10">
-                                <label class="radio-inline"><input type="radio" id="newEventPrivacy" name="newEventPrivacy" checked>Public</label>
-                                <label class="radio-inline"><input type="radio" id="newEventPrivacy" name="newEventPrivacy">Private</label>
+                                <label class="radio-inline"><input type="radio" id="newEventPrivacy" value="0" name="newEventPrivacy" checked>Public</label>
+                                <label class="radio-inline"><input type="radio" id="newEventPrivacy" value= "1" name="newEventPrivacy">Private</label>
                             </div>
                         </div> 
 
