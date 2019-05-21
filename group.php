@@ -25,6 +25,13 @@
         $group = $groupName-> fetch_assoc();
         $groupName = $group['name'];
     }
+    $isMember = "SELECT * FROM is_part_of WHERE username='".$_SESSION['user']."' AND group_id=".$_GET['groupID'].";";
+    $isMemberRes = $conn->query($isMember);
+    $isMember = $isMemberRes->num_rows;
+    $isAdmin = 0;
+    if ( $isMemberRes->fetch_assoc()['status'] == "admin") {
+        $isAdmin = 1;
+    }
     $month['01'] = 'Jan';
     $month['02'] = 'Feb';
     $month['03'] = 'Mar';
@@ -37,7 +44,15 @@
     $month['10'] = 'Oct';
     $month['11'] = 'Nov';
     $month['12'] = 'Dec';
-     if(isset($_POST['newEventSubmit'])) {
+    if (isset($_POST['acc'])) {
+        $accept = "UPDATE is_part_of SET status = 'member' WHERE group_id = ".$_GET['groupID']." AND username = '". $_GET['userID']."';";
+        $res = $conn->query($accept);
+    } else if (isset($_POST['dec'])) {
+        $decline = "DELETE FROM is_part_of WHERE group_id = ".$_GET['groupID']." AND username = '". $_GET['userID']."';";
+        $res = $conn->query($decline);
+    } 
+
+    if(isset($_POST['newEventSubmit'])) {
         //echo "<script type='text/jscript'> alert('Button clicked') </script>"; }
             
             $newEventName = $conn->real_escape_string($_POST["newEventName"]);
@@ -68,11 +83,17 @@
                 $addAdmin = "INSERT INTO participates VALUES('$getID', '".$_SESSION['user']."', 'going');";
                 $addAdmin = $conn->query( $addAdmin);
 
-                //header("location: event.php?eventID=$getID");
+                header("location: event.php?eventID=$getID");
             } else {
-                echo "<script type='text/jscript'> alert('FAILED') </script>"; 
+                echo "<script type='text/jscript'> alert('FAILED11') </script>"; 
             }  
-    }          
+    }
+
+    if (isset($_POST['join'])) {
+        $addMember = "INSERT INTO is_part_of(username, group_id, status) values('".$_SESSION['user']."',".$_GET['groupID'].", 'requested');";
+        $addMember = $conn->query($addMember);
+        header("location:group.php?groupID=".$_GET['groupID']);
+    }
 ?>
 
 <html>
@@ -105,13 +126,7 @@
 
         <ul class="navbar-nav" style="list-style-type:none;float:right;margin-top:15px">
             <li class="nav-item">
-                <a class="nav-link" style="color:red" href="#">Explore <span class= "glyphicon glyphicon-search"> </span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" style="color:red" href="#">Messages <span class= "glyphicon glyphicon-envelope"> </span></a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" style="color:red" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
+                <a class="nav-link" style="color:red" href="statistics.php">Statistics <span class= "glyphicon glyphicon-stats"> </span> </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" style="color:red" href="profile.php">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
@@ -124,18 +139,28 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-10 col-sm-offset-1" id="logout" width = "90%">
-        <div class="page-header">
+        <div class="page-header row">
 
             <!-- EVENT NAME -->
-            <h3 class="reviews"> <?php echo $groupName; ?> </h3>
+            <h3 class="reviews col-sm-11"> <?php echo $groupName; ?> </h3>
+            <?php
+                if ( $isMember <= 0 ) {
+                    echo "<form action=\"group.php?groupID=".$_GET['groupID']."\" method=\"post\">";
+                    echo "<button class=\"btn btn-primary btn-circle text-uppercase\" type=\"submit\" name=\"join\" id=\"join\">Join</button>";
+                    echo "</form>";
+                }
+            ?>
         </div>
 
         <div class="comment-tabs">
             <ul class="nav nav-tabs" role="tablist">
                 <li class="active"><a href="#comments-logout" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Events</h4></a></li>
                 <li><a href="#add-comment" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Members</h4></a></li>
-                <li><a href="#address" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">About</h4></a></li>
-                <li><a href="#createEvent" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Create Event</h4></a></li>
+                <?php
+                if ( $isAdmin == 1 ) {
+                echo '<li><a href="#createEvent" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Create Event</h4></a></li>';
+                }
+                ?>
             </ul> 
 			
             <div class="tab-content">
@@ -145,11 +170,13 @@
                     <div>
                         <ul class="event-list">
                             <?php
+                                $indexQ = "CREATE INDEX groupIndex USING BTREE on event(group_id);";
+                                $resultIndex = $conn->query($indexQ);
                                 $eventsQuery = "SELECT * FROM event WHERE group_id = ". $_GET['groupID'] . ";";
                                 $eventsList = $conn->query( $eventsQuery);
+                                if( $eventsList->num_rows > 0){
                                 while ( $currEvent = $eventsList->fetch_assoc() ) {
                                     $timeDate = explode("-", $currEvent['date']);
-                                    echo $timeDate[0];
                                     echo 
                                     '<li>
                                         <time datetime="'.$currEvent['date'].'">
@@ -164,6 +191,15 @@
                                             <p class="desc">'.$currEvent['description'].'</p>
                                         </div>
                                     </li>';
+                                }
+                            }else{
+                                    echo '<li class="media">
+                                            <div class="media-body">
+                                              <div class="well well-lg">
+                                                  <h4 class="media-heading text-uppercase reviews">This group has no events yet. Add one!</h4>
+                                                </div>              
+                                            </div>
+                                        </li>';
                                 }
                             ?>
                         </ul>
@@ -186,73 +222,43 @@
                 $partInfo = $conn->query( $partInfoQuery);
                 $partInfo = $partInfo->fetch_assoc();
                 $pic = $partInfo['profile_pic'];
-                
-                echo  "<div class=\"col-sm-3 well\">". 
-                    "<a href=\"#\"><img style=\"max-width:120px;margin-bottom:10px\" class=\"img-circle\" src=\"$pic\" alt=\"profile\">". 
-                    "</a><h5>".$partInfo['name']."</h5>".
-                    "<div class=\"caption\">".
-                        "<span class=\"label label-success badge-success\">". ucwords($partInfo['status']) ."</span>".
-                    "</div>".
-                    "</div>";
-                
+                if ( $isAdmin == 1 ) {
+                    if ( $partInfo['status'] == "requested" ) {
+                        echo  "<div class=\"col-sm-3 well\">". 
+                            "<a href=\"#\"><img style=\"max-width:120px;margin-bottom:10px\" class=\"img-circle\" src=\"$pic\" alt=\"profile\">". 
+                            "</a><h5>".$partInfo['name']."</h5>".
+                            "<div class=\"caption\">".
+                                "<span class=\"label label-success badge-success\">". ucwords($partInfo['status']) ."</span>".
+                                "<form action=\"group.php?userID=".$participant['username']."&groupID=".$_GET['groupID']."\" method=\"post\">".
+                                "<button class=\"btn btn-primary btn-circle text-uppercase\" type=\"submit\" name=\"acc\"><span class=\"glyphicon glyphicon-ok\"></span></button>".
+                                "<button class=\"btn btn-primary btn-circle text-uppercase\" type=\"submit\" name=\"dec\"><span class=\"glyphicon glyphicon-remove\"></span></button>".
+                                "</form>".
+                            "</div>".
+                            "</div>";
+                    } else {
+                        echo  "<div class=\"col-sm-3 well\">". 
+                        "<a href=\"#\"><img style=\"max-width:120px;margin-bottom:10px\" class=\"img-circle\" src=\"$pic\" alt=\"profile\">". 
+                        "</a><h5>".$partInfo['name']."</h5>".
+                        "<div class=\"caption\">".
+                            "<span class=\"label label-success badge-success\">". ucwords($partInfo['status']) ."</span>".
+                        "</div>".
+                        "</div>";
+                    }
+                } else {
+                    echo  "<div class=\"col-sm-3 well\">". 
+                        "<a href=\"#\"><img style=\"max-width:120px;margin-bottom:10px\" class=\"img-circle\" src=\"$pic\" alt=\"profile\">". 
+                        "</a><h5>".$partInfo['name']."</h5>".
+                        "<div class=\"caption\">".
+                            "<span class=\"label label-success badge-success\">". ucwords($partInfo['status']) ."</span>".
+                        "</div>".
+                        "</div>";
+                }                
             }
             echo "</center></div>";
         ?>
     </div>
 
 
-            <!--group TAB-->
-            <div class="tab-pane" id="address">
-                <form action="#" method="post" class="form-horizontal" id="accountSetForm" role="form">
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-sm-8">                    
-                                <!--Google map-->
-                                <div class="container-fluid">
-                                    <div class="map-responsive">
-                                    <?php 
-                                    echo "<iframe style=\"width:100%\" src=\"https://www.google.com/maps/embed/v1/place?key=AIzaSyA0s1a7phLN0iaD6-UE7m4qP-z21pH0eSc&q=$address\" width=\"600\" height=\"450\" frameborder=\"0\" style=\"border:0\" allowfullscreen></iframe>";
-                                    ?>
-                                    </div>
-                                </div>
-                            </div> 
-
-                            <!-- <div class="row" style="text-align: center"> -->
-                            <div class="col-sm-4" style="padding-left:0px">
-                                <ul style="list-style-type:none;padding-left:0px">
-                                    <li>
-                                        <div style="display: inline-block">
-                                            <h4 class="media-heading text-uppercase reviews">DATE </h4>
-                                            <p class="media-comment">
-                                                <?php echo $group['date']; ?>
-                                            </p>
-                                        </div>
-                                    </li>
-
-                                    <li>
-                                        <div style="display: inline-block"> 
-                                            <h4 class="media-heading text-uppercase reviews">TIME </h4>
-                                            <p class="media-comment">
-                                                <?php echo $group['start_time']; ?>
-                                            </p>
-                                        </div>
-                                    </li>
-                                    <li>
-                                        <div class="col-sm-12" style="display: inline-block; word-wrap:break-word; padding-left:0px">
-                                            <h4 class="media-heading text-uppercase reviews">DESCRIPTION</h4>
-                                            <p class="media-comment">
-                                                <?php echo $group['description']; ?>
-                                            </p>
-                                        </div
-                                    ></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <!-- </div>  -->
-                    </div>			    
-
-                </form>
-            </div>
 
             <?php 
             $isAdmin = "SELECT status".
@@ -270,13 +276,10 @@
                     <form action="group.php?groupID='.$_GET['groupID'].'" method="post" class="form-horizontal" id="newEventSetForm" role="form">
                         
                         <div class="form-group">
-                            <label for="avatar" class="col-sm-2 control-label">Avatar</label>
+                            <label for="avatar" class="col-sm-2 control-label">Event Picture</label>
                             <div class="col-sm-10">                                
                                 <div class="custom-input-file">
-                                    <label class="uploadPhoto">
-                                        Edit
-                                        <input type="file" class="change-avatar" name="avatar" id="avatar">
-                                    </label>
+                                    <img style="max-width:150px" class="media-object img-circle" src="https://farm4.staticflickr.com/3100/2693171833_3545fb852c_q.jpg" alt="profile">
                                 </div>
                             </div>
                         </div>

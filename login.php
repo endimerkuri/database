@@ -48,7 +48,7 @@
         <!------ Include the above in your HEAD tag ---------->
     </head>
     <body>
-        <div id="demo" class="carousel slide" data-ride="carousel" data-interval="1000">
+        <div id="demo" class="carousel slide" data-ride="carousel" data-interval="1500">
             <div class="carousel-inner">
                 <div id="content-wrapper" class="wrapper">
                     <div class="wrapper fadeInDown">

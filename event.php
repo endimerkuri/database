@@ -27,10 +27,40 @@
     else{
         $event = $eventName-> fetch_assoc();
         $eventName = $event['name'];
+        $eventID = $event['id'];
+        $groupID = $event['group_id'];
         $address = $event['city_name']."+".$event['country'];
     }
 
+    $memberQuery = "SELECT status FROM is_part_of WHERE username='".$_SESSION['user']."' AND group_id = $groupID;";
+    $memberQuery = $conn->query( $memberQuery);
+    $memberType = $memberQuery->fetch_assoc()['status'];
+
+    $goingQ = "SELECT status FROM participates WHERE username='".$_SESSION['user']."' AND event_id = $eventID;";
+    $going = $conn->query( $goingQ);
+    $going = $going->fetch_assoc()['status'];
+    if ( !isset($going) ) {
+        $show = 1;
+    } else {
+        $show = 0;
+    }
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        if ( isset($_POST['yes'])) {
+            $update = "INSERT INTO participates VALUES($eventID, '".$_SESSION['user']."', 'going');";
+            $update = $conn->query($update);
+            header("location:event.php");
+        } else if ( isset($_POST['maybe'])) {
+            $update = "INSERT INTO participates VALUES($eventID, '".$_SESSION['user']."', 'interested');";
+            $update = $conn->query($update);
+            header("location:event.php");
+        } else if ( isset($_POST['no'])) {
+            $update = "INSERT INTO participates VALUES($eventID, '".$_SESSION['user']."', 'not going');";
+            $update = $conn->query($update);
+            header("location:event.php");
+        } else {
+
+        }
+
         if ( isset($_GET['reply'])  ) {
             $submitReply1 = 
                 "INSERT INTO comment (rate, text_content, event_id, username, status) VALUES (0, '".$_POST['addComment']."',".$_SESSION['eventID'].", '".$_SESSION['user']."', 1);";
@@ -77,13 +107,7 @@
 
         <ul class="navbar-nav" style="list-style-type:none;float:right;margin-top:15px">
             <li class="nav-item">
-                <a class="nav-link" style="color:red" href="#">Explore <span class= "glyphicon glyphicon-search"> </span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" style="color:red" href="#">Messages <span class= "glyphicon glyphicon-envelope"> </span></a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link" style="color:red" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
+                <a class="nav-link" style="color:red" href="statistics.php">Statistics <span class= "glyphicon glyphicon-stats"> </span> </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" style="color:red" href="profile.php">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
@@ -96,10 +120,19 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-10 col-sm-offset-1" id="logout" width = "90%">
-        <div class="page-header">
+        <div class="page-header row">
 
             <!-- EVENT NAME -->
-            <h3 class="reviews"> <?php echo $eventName; ?> </h3>
+            <h3 class="reviews col-sm-8"> <?php echo $eventName; ?> </h3>
+            <?php
+                if ( $show == 1 ) {
+                    echo "<form action=\"event.php\" method=\"post\">";
+                    echo "<button class=\"btn btn-primary btn-circle text-uppercase\" type=\"submit\" name=\"yes\" id=\"join\">Going</button>";
+                    echo "<button class=\"btn btn-primary btn-circle text-uppercase\" type=\"submit\" name=\"maybe\" id=\"join\">Interested</button>";
+                    echo "<button class=\"btn btn-primary btn-circle text-uppercase\" type=\"submit\" name=\"no\" id=\"join\">Not going</button>";
+                    echo "</form>";
+                }
+            ?>
         </div>
 
         <div class="comment-tabs">
@@ -114,8 +147,10 @@
 				
 				<ul class="media-list">
                 <!-- Comment TextArea -->
-				<li class="media">
-					<form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" method="post" class="form-horizontal" id="commentForm" role="form"> 
+				<?php
+                $print = <<<EOT
+                    <li class="media">
+					<form action="#" method="post" class="form-horizontal" id="commentForm" role="form"> 
                         <div class="form-group">
                             <label for="email" class="col-sm-2 control-label">Comment</label>
                             <div class="col-sm-10">
@@ -144,11 +179,11 @@
 							<div class="col-sm-offset-2 col-sm-10">
 
                                 <div class="col-sm-7">
-                                    <label for="rating" class="control-label">Rate This</label>
-                                    <input id="rating" name="input-1" value="4.3" class="rating-loading">
+                                    <label for="input-1" class="control-label">Rate This</label>
+                                    <input id="input-1" name="input-1" value="4.3" class="rating-loading">
                                     <script>
                                     $(document).on('ready', function(){
-                                        $('#rating').rating({min: 0, max: 5, step: 0.1, stars: 5});
+                                        $('#input-1').rating({min: 0, max: 5, step: 0.1, stars: 5});
                                     });
                                     </script>
                                 </div>
@@ -161,7 +196,13 @@
                         </div>
            
 					</form>
-				</li> <!-- end Comment TextArea -->
+                    </li>
+EOT;
+
+                if ( $memberType == "member" || $memberType == "admin") {
+                    echo $print;   
+                }
+                ?>
 
 
             <?php 
@@ -340,6 +381,21 @@ EOT;
                                             <h4 class="media-heading text-uppercase reviews">TIME </h4>
                                             <p class="media-comment">
                                                 <?php echo $event['start_time']; ?>
+                                            </p>
+                                        </div>
+                                    </li>
+
+                                    <li>
+                                        <div style="display: inline-block"> 
+                                            <h4 class="media-heading text-uppercase reviews">HOST GROUP</h4>
+                                            <p class="media-comment">
+                                                <?php 
+                                                $findName = "SELECT name FROM `group` WHERE id = ".$event['group_id'].";";
+                                                $findName = $conn->query($findName);
+                                                $findName = $findName->fetch_assoc()['name'];
+
+                                                echo "<a href=\"group.php?groupID=".$event['group_id']."\">$findName</a>"; 
+                                                ?>
                                             </p>
                                         </div>
                                     </li>

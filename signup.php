@@ -18,25 +18,30 @@
         if($_POST['passwordReg'] == $_POST['passwordReg2']){
             
             //echo "Passwords are matching. <br>";
+            if($con->real_escape_string($_POST["usernameReg"]) == $_POST["usernameReg"] && $con->real_escape_string($_POST["passwordReg"]) == $_POST["passwordReg"]){
+
+              $userReg = $con->real_escape_string($_POST["usernameReg"]);
+              $passReg = $con->real_escape_string($_POST["passwordReg"]);
+              $nameOfUser = $con->real_escape_string($_POST["nameOfUser"]);
+              $surnameOfUser = $con->real_escape_string($_POST["surnameOfUser"]);
+              $emailaddress = $con->real_escape_string($_POST["emailaddress"]);
+              
+              $nameTogether = ucwords($nameOfUser . " " . $surnameOfUser);
+              //echo "username: " . $userReg . "<br>";
+              //echo "password: " . $passReg;
+              $registerQuery = "INSERT INTO user(username, name, email, password) VALUES('$userReg', '$nameTogether', '$emailaddress', '$passReg');";
+              
+              if($con->query($registerQuery) === true) {
+                  $_SESSION['user'] = $userReg;
+                  header("location: profile.php");
+              } else {
+                  $_SESSION['message'] = "<span style=\"color:red\"> Register is unsuccessful!</span>";
+              }
             
-            $userReg = $con->real_escape_string($_POST["usernameReg"]);
-            $passReg = $con->real_escape_string($_POST["passwordReg"]);
-            $nameOfUser = $con->real_escape_string($_POST["nameOfUser"]);
-            $surnameOfUser = $con->real_escape_string($_POST["surnameOfUser"]);
-            $emailaddress = $con->real_escape_string($_POST["emailaddress"]);
-            
-            $nameTogether = ucwords($nameOfUser . " " . $surnameOfUser);
-            //echo "username: " . $userReg . "<br>";
-            //echo "password: " . $passReg;
-            $registerQuery = "INSERT INTO user(username, name, email, password) VALUES('$userReg', '$nameTogether', '$emailaddress', '$passReg');";
-            
-            if($con->query($registerQuery) === true) {
-                $_SESSION['user'] = $userReg;
-                header("location: profile.php");
-            } else {
-                $_SESSION['message'] = "<span style=\"color:red\"> Register is unsuccessful!</span>";
+            } else{
+              $_SESSION['message'] = "<span style=\"color:red\"> Invalid characters!</span>";
             }
-          
+            
         } else{
             $_SESSION['message'] = "<span style=\"color:red\"> Passwords do NOT match!</span>";
         }
@@ -56,7 +61,7 @@
 	</head>
 
 	<body>      
-  <div id="demo" class="carousel slide" data-ride="carousel" data-interval="1000">
+  <div id="demo" class="carousel slide" data-ride="carousel" data-interval="1500">
             <div class="carousel-inner">
                 <div id="content-wrapper" class="wrapper">
                 <div class = "wrapper">

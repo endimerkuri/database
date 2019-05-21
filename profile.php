@@ -9,10 +9,11 @@ session_start();
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script> 
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
     
     <link rel="stylesheet" type ="text/css" href = "styles.css">
     <link rel="stylesheet" type ="text/css" href = "styleEvent.css">
@@ -27,13 +28,7 @@ session_start();
 
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link text-danger" href="#">Explore <span class= "glyphicon glyphicon-search"> </span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-danger" href="#">Messages <span class= "glyphicon glyphicon-envelope"> </span></a>
-            </li>
-            <li class="nav-item active">
-                <a class="nav-link text-danger" href="#">Notifications <span class= "glyphicon glyphicon-bell"> </span> </a>
+                <a class="nav-link" style="color:red" href="statistics.php">Statistics <span class= "glyphicon glyphicon-stats"> </span> </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-danger" href="profile.php">Profile <span class= "glyphicon glyphicon-user"> </span> </a>
@@ -55,21 +50,20 @@ session_start();
         if($con -> connect_error) {
             die("Connection Failed: " . $con -> connect_error) . "<br>";
         }
-
+        
+        
         $month['01'] = 'Jan';
-    $month['02'] = 'Feb';
-    $month['03'] = 'Mar';
-    $month['04'] = 'Apr';
-    $month['05'] = 'May';
-    $month['06'] = 'Jun';
-    $month['07'] = 'Jul';
-    $month['08'] = 'Aug';
-    $month['09'] = 'Sep';
-    $month['10'] = 'Oct';
-    $month['11'] = 'Nov';
-    $month['12'] = 'Dec';
-        
-        
+        $month['02'] = 'Feb';
+        $month['03'] = 'Mar';
+        $month['04'] = 'Apr';
+        $month['05'] = 'May';
+        $month['06'] = 'Jun';
+        $month['07'] = 'Jul';
+        $month['08'] = 'Aug';
+        $month['09'] = 'Sep';
+        $month['10'] = 'Oct';
+        $month['11'] = 'Nov';
+        $month['12'] = 'Dec';
         
         $user = $_SESSION['user'];
         
@@ -146,14 +140,40 @@ session_start();
         $personalInfo = $userRes["personal_info"];
         
         //$profilePic = $userRes["profile_pic"];
-        // echo "name of the user: " . $nameOfUser . "<br>";
-        
+        // echo "name of the user: " . $nameOfUs
         $_SESSION['nameOfUser'] = $nameOfUser;
         
-        $getAllMessages = "SELECT C.sender AS sender, M.text AS text, M.time AS time FROM message M,
+        $getAllMessages = "SELECT C.sender AS sender, M.text AS text, M.subject AS subject, M.time AS time FROM message M,
                             chat C WHERE C.receiver = '$user' AND C.message_id = M.id";
         $messages = $con->query($getAllMessages);
         
+        $getAllSentMessages = "SELECT C.receiver AS receiver, M.text AS text, M.subject AS subject, M.time AS time FROM message M,
+                            chat C WHERE C.sender = '$user' AND C.message_id = M.id";
+        $sentMessages = $con->query($getAllSentMessages);
+        
+        //dealing with send message here
+        
+            if(isset($_POST['sendMessage'])){
+                $receiver = $_POST["inputTo"];
+                $inputSubject = $_POST["inputSubject"];
+                $inputText = $_POST["inputBody"];
+                //echo "receiver: " . $receiver;
+                //echo "text: " . $inputSubject;
+                //echo "subject: " . $inputText ."<br>";
+                
+                if ($inputSubject == ""){
+                    $inputSubject = "No Subject";
+                }
+                
+                $insertIntoMessageQuery = "INSERT INTO message(text, subject) VALUES ('$inputText','$inputSubject');";
+                $executeMessageInsertion = $con->query($insertIntoMessageQuery);
+                if ($executeMessageInsertion){
+                    $newMessageId = (int) mysqli_insert_id($con);
+                    //echo "new message id: " . $newMessageId;
+                    $insertIntoChatQuery = "INSERT INTO chat VALUES ($newMessageId, '$user', '$receiver')";
+                    $con->query($insertIntoChatQuery);
+                }
+            }
         // echo "Profile Page: <br> username: " . $user . "<br>" ;
         // echo "password: " . $pass . "<br>" ;
         
@@ -175,8 +195,8 @@ session_start();
   
                   $addGroupAdmin = "INSERT INTO is_part_of(username, group_id, status) VALUES('".$_SESSION['user']."', '$newGroupID', 'admin');";
                   $addGroupAdmin = $con->query( $addGroupAdmin);
-  
-                  header("location: group.php?groupID=$newGroupID");
+                  echo $newGroupID;
+                  header("location: group.php?groupID=".$newGroupID);
               } else {
                   echo "<script type='text/jscript'> alert('FAILED') </script>"; 
               }  
@@ -190,15 +210,193 @@ session_start();
             <h3 class="reviews"><span style="color:red"> <?= $nameOfUser  ?></span></h3>
         </div>
         <div class="comment-tabs">
+          
             <ul class="nav nav-tabs" role="tablist">
-                <li class="active"><a href="#comments-logout" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Groups</h4></a></li>
+                <li class="active"><a href="#most-pop" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Search</h4></a></li>
+                <li><a href="#top" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Top</h4></a></li>
+                <li><a href="#comments-logout" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Groups</h4></a></li>
                 <li><a href="#events" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">My Events</h4></a></li>
                 <li><a href="#account-settings" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Account settings</h4></a></li>
                 <li><a href="#inbox" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Inbox</h4></a></li>
                 <li><a href="#createGroup" role="tab" data-toggle="tab"><h4 class="reviews text-capitalize">Create Group</h4></a></li>
-            </ul>            
-            <div class="tab-content">
-                <div class="tab-pane active" id="comments-logout">                
+            </ul>
+            <div class="tab-content">  
+                <div class="tab-pane active" id="most-pop">
+                    <div class="md-form active-cyan active-cyan-2 mb-3">
+                        <form action="profile.php" method="post" >
+                            <input style="width:100%" class="form-control" name="searchInput" type="text" placeholder="Search" aria-label="Search">
+                            <input type="submit" name ="searchButton"  value="s" style="display: none">
+                        </form>
+                    </div>
+                    <!-- Invisible Button-->      
+    <?php
+    
+        $searchKey = $_SESSION['searchKey'];
+        
+        if(isset($_POST['searchButton']) && $_POST['searchInput'] != ""){
+            //echo"user: " . $user;
+
+            //echo "searchButton is clicked! <br>";
+
+            $searchKey = $_POST['searchInput'];
+            $_SESSION['searchKey'] = $searchKey;
+            //echo"search key: " . $searchKey . "<br>";
+
+            if($con -> connect_error) {
+                die("Connection Failed: " . $con -> connect_error) . "<br>";    
+            }
+            /*
+                                    SEARCHING IN GROUPS
+            */
+            $searchQuery = "SELECT DISTINCT* FROM `group` WHERE name LIKE '%$searchKey%' OR description LIKE '%$searchKey%';";
+            $getSearchGroups = $con->query($searchQuery);
+            echo'<ul class="media-list">';
+            //echo"The Query: " . $searchQuery . "<br>";
+            //$searchQuery = "SELECT COUNT(*) FROM `group`;";
+            //$getSearchGroups = $con->query($searchQuery);
+            if ($getSearchGroups->num_rows > 0){    
+                while ($rooow = $getSearchGroups->fetch_assoc()){
+                    //echo"We are inside while <br>";
+                    //echo"name: " . $rooow["name"] . "   description: " . $rooow["description"];
+
+                    echo '<li class="media">
+                                <a class="pull-left" href="#">
+                                  <img class="media-object img-circle" src="group.jpg" alt="profile">
+                                </a>
+                                <div class="media-body">
+                                  <div class="well well-lg">
+                                      <h4 class="media-heading text-uppercase reviews">'. $rooow["name"] .'</h4>
+                                      <p class="media-comment">'.
+                                       $rooow["description"].
+                                      '</p>
+                                      <a class="btn btn-info btn-circle text-uppercase" href="group.php?groupID='.$rooow['id'].'"><span class="glyphicon glyphicon-share-alt"></span> Go To Group</a>
+                                  </div>              
+                                </div>                        
+                              </li>';
+                }
+            }
+            else{
+                echo '<li class="media">
+                    <div class="media-body">
+                      <div class="well well-lg">
+                          <h4 class="media-heading text-uppercase reviews">NO GROUPS FOUND.</h4>
+                        </div>              
+                    </div>
+                </li>';
+            }
+                    echo"</ul>"; 
+            
+            echo'<ul class="event-list">';
+            $searchQuery2 = "SELECT * FROM event WHERE name LIKE '%$searchKey%' OR description LIKE '%$searchKey%';";
+            $getSearchEvents = $con->query($searchQuery2);
+            
+            if ($getSearchEvents->num_rows > 0){ 
+                while ( $rooow2 = $getSearchEvents->fetch_assoc() ) {
+                                    echo 
+                                    '<li>
+                                        <time datetime="2014-07-20">
+                                            <span class="day">4</span>
+                                            <span class="month">Jul</span>
+                                            <span class="year">2014</span>
+                                            <span class="time">ALL DAY</span>
+                                        </time>
+                                        <img alt="Independence Day" src="https://farm4.staticflickr.com/3100/2693171833_3545fb852c_q.jpg" />
+                                        <div class="info">
+                                            <a href="event.php?eventID='.$rooow2['id'].'"><h2 class="title">'.$rooow2['name'].'</h2></a>
+                                            <p class="desc">'.$rooow2['description'].'</p>
+                                        </div>
+                                        <div class="social">
+                                            <ul>
+                                                <li class="facebook" style="width:33%;"><a href="#facebook"><span class="fa fa-facebook"></span></a></li>
+                                                <li class="twitter" style="width:34%;"><a href="#twitter"><span class="fa fa-twitter"></span></a></li>
+                                                <li class="google-plus" style="width:33%;"><a href="#google-plus"><span class="fa fa-google-plus"></span></a></li>
+                                            </ul>
+                                        </div>
+                                    </li>';
+                                }
+                echo'</ul>';
+                
+            } else{
+                echo '<li class="media">
+                <div class="media-body">
+                  <div class="well well-lg">
+                      <h4 class="media-heading text-uppercase reviews">NO EVENTS FOUND.</h4>
+                    </div>              
+                </div>
+            </li>'; 
+            }
+
+            $searchUserQuery = "SELECT DISTINCT* FROM user WHERE username LIKE '%$searchKey%' OR name LIKE '%$searchKey%';";
+            $getSearchUser = $con->query($searchUserQuery);
+            echo'<ul class="media-list">';
+
+            if ($getSearchUser->num_rows > 0){
+                while ( $rooow3 = $getSearchUser->fetch_assoc() ) {
+                   echo 
+                    '<li class="media">
+                          <a class="pull-left" href="#">
+                              <img class="media-object img-circle" src="' . $rooow3['profile_pic'] . '" alt="profile">
+                          </a>
+                                <div class="media-body">
+                                  <div class="well well-lg">
+                                      <h4 class="media-heading text-uppercase reviews">'. $rooow3["name"] .'</h4>
+                                      <h4 class="media-heading text-uppercase reviews">'. $rooow3["username"] .'</h4>
+                                      <p class="media-comment">'.
+                                       $rooow3["personal_info"].
+                                      '</p>
+                                  </div>              
+                                </div>                        
+                              </li>';
+                    }
+
+            } else{
+
+
+                echo '<li class="media">
+                    <div class="media-body">
+                      <div class="well well-lg">
+                          <h4 class="media-heading text-uppercase reviews">NO USER FOUND.</h4>
+                        </div>
+                    </div>
+                </li>';
+            }
+            echo'</ul>';
+            
+            
+        }
+    ?>
+             </div>
+            <div class="tab-pane" id="top">                
+                        <ul class="event-list">
+                            <?php
+                                echo "MOST POPULAR EVENTS EVER";
+                                $topEvents = "SELECT * FROM popularEvents;";
+                                $topEvents = $con->query( $topEvents);
+                                if( $topEvents->num_rows > 0){
+                                  while ( $currEvent = $topEvents->fetch_assoc() ) {
+                                      $eventDate = explode("-", $currEvent['date']);
+                                      echo 
+                                      '<li>
+                                          <time datetime="'.$currEvent['date'].'">
+                                              <span class="day">'.$eventDate[2].'</span>
+                                              <span class="month">'.$month[$eventDate[1]].'</span>
+                                              <span class="year">'.$eventDate[0].'</span>
+                                              <span class="time">ALL DAY</span>
+                                          </time>
+                                          <img alt="Independence Day" src="https://farm4.staticflickr.com/3100/2693171833_3545fb852c_q.jpg" />
+                                          <div class="info">
+                                              <a href="event.php?eventID='.$currEvent['id'].'"><h2 class="title">'.$currEvent['name'].'</h2></a>
+                                              <p class="desc">'.$currEvent['description'].'</p>
+                                          </div>
+                                      </li>';
+                                  }
+                                }else{
+                                  echo "NO EVENTS TO DISPLAY";
+                                }
+                             ?>
+                        </ul>
+                </div>
+                <div class="tab-pane" id="comments-logout">                
                     <ul class="media-list">
                         
                     <?php
@@ -210,7 +408,7 @@ session_start();
                                 
                               echo '<li class="media">
                                 <a class="pull-left" href="#">
-                                  <img class="media-object img-circle" src="https://s3.amazonaws.com/uifaces/faces/twitter/dancounsell/128.jpg" alt="profile">
+                                  <img class="media-object img-circle" src="group.jpg" alt="profile">
                                 </a>
                                 <div class="media-body">
                                   <div class="well well-lg">
@@ -220,7 +418,7 @@ session_start();
                                         <li class="mm">09</li>
                                         <li class="aaaa">2014</li>
                                       </ul>
-                                      <div class= "caption">
+                                      <div style="float:right" class= "caption">
                                         <span class="label label-success badge-success">'. $row["status"] .'</span>
                                       </div>
                                       <p class="media-comment">'.
@@ -250,8 +448,11 @@ session_start();
                 
                 <!--Event-->
                 <div class="tab-pane" id="events">
-                        <ul class="event-list">
+                <ul class="event-list">
                             <?php
+                                $secondaryIndex = "CREATE INDEX userIndex USING BTREE ON event(username);";
+                                $secondaryIndexExec = $con->query( $secondaryIndex);
+                                
                                 $userEventsQuery = "SELECT * FROM participates JOIN event ON event_id = id WHERE username = '". $_SESSION['user'] ."' AND status IN ('going','interested');";
                                 $eventsList = $con->query( $userEventsQuery);
                                 if( $eventsList->num_rows > 0){
@@ -274,7 +475,13 @@ session_start();
                                       </li>';
                                   }
                                 }else{
-                                  echo "NO EVENTS TO DISPLAY";
+                                    echo '<li class="media">
+                                        <div class="media-body">
+                                          <div class="well well-lg">
+                                              <h4 class="media-heading text-uppercase reviews">You are not part of any events.</h4>
+                                            </div>              
+                                        </div>
+                                    </li>';
                                 }
                              ?>
                         </ul>
@@ -286,14 +493,17 @@ session_start();
                         <div class="form-group">
                             <label for="avatar" class="col-sm-2 control-label">Avatar</label>
                             <div class="col-sm-10">                                
-                                <div class="custom-input-file">
-                                    <label class="uploadPhoto">
-                                        <!--?php
-                                        echo '<img src="'. $profilePic .' width = 100 height=100 id="profile-pic"/>';
-                                        ?-->
-                                        <input type="file" class="change-avatar" name="avatar" id="avatar">
-                                    </label>
-                                </div>
+                                <!-- <div class="custom-input-file">
+                                    <label class="uploadPhoto"> -->
+                                        <?php
+                                          $pic = "SELECT profile_pic FROM user WHERE username='".$_SESSION['user']."';";
+                                          $pic = $con->query($pic);
+                                          $pic = $pic->fetch_assoc()['profile_pic'];
+                                          echo '<img style="max-width:150px" class="media-object img-circle" src="'.$pic.'" alt="profile">';
+                                        ?>
+                                        <!-- <input type="file" class="change-avatar" name="avatar" id="avatar"> -->
+                                    <!-- </label>
+                                </div> -->
                             </div>
                         </div>
                         <div class="form-group">
@@ -355,30 +565,27 @@ session_start();
                   <div class="nav">
                     <a href="#" data-toggle="modal" data-target="#modalCompose">compose</a>
                     <a href="#" class="active">inbox</a>
-                    <a href="#" >sent</a>
                   </div>
                   <div class="messages">
-                    <input name="search" placeholder="search" />
-                    <div class="actions-dropdown">
-                      <label>actions <span>▼</span></label>
-                      <ul>
-                        <li>flag</li>
-                        <li>move</li>
-                        <li>delete</li>
-                      </ul>
-                    </div>
 
                     <?php
                         if ($messages->num_rows > 0)
                         {
+                            $i = 0;
                             while ($row = $messages->fetch_assoc()){
-                                echo '<div class="message">
+                                echo '<div class="message" data-toggle="collapse" data-target="#message-content'.$i.'">
                               <input type="checkbox" />
-                              <span class="sender">'. $row["sender"].'</span>
+                              <span class="sender" >'. $row["sender"].'</span>
                               <span class="date">'. $row["time"].'</span>
-                              <span class="title">'. $row["text"].'</span>
+                              <span class="title">'. $row["subject"].'</span>
+                            </div>
+
+                            <div id="message-content'.$i.'" class="collapse">'
+                                    . $row["text"] .'                          
                             </div>';
-                              
+
+                            $i = $i + 1;
+
                             }
                         }
 
@@ -400,25 +607,24 @@ session_start();
                         
                       </div>
                       <div class="modal-body">
-                        <form role="form" class="form-horizontal">
+                        <form action="profile.php" method="post" id="messageForm" role="form" class="form-horizontal">
                             <div class="form-group">
                               <label class="col-sm-2" for="inputTo">To</label>
-                              <div class="col-sm-10"><input type="email" class="form-control" id="inputTo" placeholder="comma separated list of recipients"></div>
+                              <div class="col-sm-10"><input type="text" class="form-control" name="inputTo" placeholder="enter recipient username" required></div>
                             </div>
                             <div class="form-group">
                               <label class="col-sm-2" for="inputSubject">Subject</label>
-                              <div class="col-sm-10"><input type="text" class="form-control" id="inputSubject" placeholder="subject"></div>
+                              <div class="col-sm-10"><input type="text" class="form-control" name="inputSubject" placeholder="subject" ></div>
                             </div>
                             <div class="form-group">
                               <label class="col-sm-12" for="inputBody">Message</label>
-                              <div class="col-sm-12"><textarea class="form-control" id="inputBody" rows="18"></textarea></div>
+                              <div class="col-sm-12"><textarea class="form-control" name="inputBody" rows="18"></textarea></div>
                             </div>
                         </form>
                       </div>
                       <div class="modal-footer">
                         <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button> 
-                        <button type="button" class="btn btn-warning pull-left">Save Draft</button>
-                        <button type="button" class="btn btn-primary ">Send <i class="fa fa-arrow-circle-right fa-lg"></i></button>
+                        <button type="submit" form="messageForm" class="btn btn-primary " name = "sendMessage">Send <i class="fa fa-arrow-circle-right fa-lg"></i></button>
 
                       </div>
                     </div><!-- /.modal-content -->
@@ -438,10 +644,7 @@ session_start();
                             <label for="avatar" class="col-sm-2 control-label">Avatar</label>
                             <div class="col-sm-10">                                
                                 <div class="custom-input-file">
-                                    <label class="uploadPhoto">
-                                        Edit
-                                        <input type="file" class="change-avatar" name="avatar" id="avatar">
-                                    </label>
+                                  <img style="max-width:150px" class="media-object img-circle" src="group.jpg" alt="profile">
                                 </div>
                             </div>
                         </div>
@@ -449,7 +652,7 @@ session_start();
                         <div class="form-group">
                             <label for="newGroupName" class="col-sm-2 control-label">Group Name</label>
                             <div class="col-sm-10">
-                              <input type="text" class="form-control" name="newGroupName" id="newGroupName" placeholder="Enter event name" required>
+                              <input type="text" class="form-control" name="newGroupName" id="newGroupName" placeholder="Enter group name" required>
                             </div>
                         </div>
 
