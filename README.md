@@ -19,4 +19,4 @@ Below you can find the design documents for our system and the progress reports.
 [Final Report](FinalReport.pdf)
 
 ## Join the network
-[GatherTogether](http://dijkstra.cs.bilkent.edu.tr/~endi.merkuri/GatherTogether/)
+[GatherTogether](index.php)
