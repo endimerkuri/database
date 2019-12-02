@@ -4,7 +4,7 @@ Ana Peçini
 Endi Merkuri  
 Krisela Skënderi  
 
-## [GatherTogether:](http://dijkstra.cs.bilkent.edu.tr/~endi.merkuri/GatherTogether/)
+## [GatherTogether:](http://dijkstra.cs.bilkent.edu.tr/~krisela.sknderi/GatherTogether/)
 ### Your Social Media Platform for Hosting Events  
 *Would you like to create an event but don't know how to tell your friends about it?  
 Are you bored and don't know where to go and what to do?*  
@@ -19,4 +19,4 @@ Below you can find the design documents for our system and the progress reports.
 [Final Report](FinalReport.pdf)
 
 ## Join the network
-[GatherTogether](index.php)
+[GatherTogether](http://dijkstra.cs.bilkent.edu.tr/~krisela.sknderi/GatherTogether/)
